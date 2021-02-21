@@ -1741,6 +1741,8 @@ def savingHTFile():  # it allows the user to proceed the chooses module
 
 tk.Button(frameHTAnalysis, text="Save HT File", command=savingHTFile, width=10, height=1).grid(row=1, column=3)
 
+"""This part of code removes the duplicate items """
+
 
 def elementLoad():
     global onlyTrussEle, finalTrussEle, ELEMENT_SET_COL, ELEMENT_SET_Truss
