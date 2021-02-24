@@ -1,6 +1,6 @@
 """ this module makes FDS and OpenSEES files , in this version 'A' some parts are removed (Longitudinal and transverse
 Beams and trusses are removed ) and only AST method is included, and an area in X any Y direction of slab ,
-beams and truss is chosen_to add
+beams and truss is chosen_
  NEW : Added a function to remove duplicate elements from Truss which were appeared due to same location"""
 
 try:
@@ -107,7 +107,10 @@ def location():  # Directory Location
 tk.Button(fdsFrame, text="Directory", command=location, width=10, height=1).grid(row=0, column=1, padx=10, pady=10)
 tk.Label(fdsFrame, width=15, text="Get Working Directory", anchor='e').grid(row=0, column=0, padx=5, pady=5)
 
-fdsFile = 'fds.txt'  # file containing FDS devices
+fdsFile = 'fds.txt'  # file containing all FDS devices
+fds_AST = 'fds_ast.txt'  # file containing FDS AST devices
+fds_HF = 'ElementFiles/fds_hf.txt'  # file containing FDS heat flux devices
+fds_HTC = 'ElementFiles/fds_htc.txt'  # file containing FDS HTC devices
 osFile = 'OpenSees.txt'  # script file for OpenSEES HT
 ELEMENT_SET2 = 'Elementset2.txt'  # element file containing boundary file names
 ELEMENT_SET_COL = 'ElementFiles/Col_elementset.txt'  # makes element for columns
@@ -123,7 +126,7 @@ Final_EleSET2 = 'Final_EleSet.txt'   # makes final file containing updated files
 '''Drop menu for the devices, if user wants to create devices at the same place, better just copy
  paste the devices and  name accordingly'''
 
-fdsQuantity = ["ADIABATIC SURFACE TEMPERATURE"]
+fdsQuantity = ["Yes", "No"]
 fdsDevices = tk.StringVar()   # it was fdsDevices
 fdsDevices.set(fdsQuantity[0])  # use variables as list
 dropFDS = tk.OptionMenu(fdsFrame, fdsDevices, *fdsQuantity)
@@ -594,21 +597,34 @@ jEle = 1  # counter for shell elements, so used for slabs in OpenSEES
 '''These functions are to make the devices for FDS script file'''
 
 
-def fdsFileMaker(begin, final, increment, Bfile, Quantity, Cord1, Cord2, IOR):
+def fdsFileMaker(begin, final, increment, Cord1, Cord2, IOR):
     global j
     if structureType.get() == "Columns":
         while begin < final:
             if units.get() == "m":
                 devcLocCol = begin + float(inc_Column.get()) / 2
-                with open(fdsFile, 'a') as f1:
-                    f1.writelines("\n&DEVC ID = '{1}{0}', QUANTITY={2}, XYZ={3},{4},{5}, "
-                                  "IOR={6}/".format(j, Bfile, Quantity, Cord1, Cord2, devcLocCol, IOR))
+                with open(fds_AST, 'a') as f1:
+                    f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3}, "
+                                  "IOR={4}/".format(j, Cord1, Cord2, devcLocCol, IOR))
+                with open(fds_HF, 'a') as f1:
+                    f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3}, "
+                                  "IOR={4}/".format(j, Cord1, Cord2, devcLocCol, IOR))
+                with open(fds_HTC, 'a') as f1:
+                    f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3}, "
+                                  "IOR={4}/".format(j, Cord1, Cord2, devcLocCol, IOR))
 
             if units.get() == "mm":
                 devcLocCol = begin/1000 + float(inc_Column.get()) / 2000
-                with open(fdsFile, 'a') as f1:
-                    f1.writelines("\n&DEVC ID = '{1}{0}', QUANTITY={2}, XYZ={3},{4},{5}, "
-                                  "IOR={6}/".format(j, Bfile, Quantity, Cord1, Cord2, devcLocCol, IOR))
+                with open(fds_AST, 'a') as f1:
+                    f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3}, "
+                                  "IOR={4}/".format(j, Cord1, Cord2, devcLocCol, IOR))
+                with open(fds_HF, 'a') as f1:
+                    f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3}, "
+                                  "IOR={4}/".format(j, Cord1, Cord2, devcLocCol, IOR))
+                with open(fds_HTC, 'a') as f1:
+                    f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3}, "
+                                  "IOR={4}/".format(j, Cord1, Cord2, devcLocCol, IOR))
+
             j += 1
             begin += increment
 
@@ -617,28 +633,52 @@ def fdsFileMaker(begin, final, increment, Bfile, Quantity, Cord1, Cord2, IOR):
             if incrementDirectionSLB.get() == "X":
                 if units.get() == "m":
                     devcLocSlab = begin + float(incX_slab.get()) / 2
-                    with open(fdsFile, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = '{1}{0}', QUANTITY={2}, XYZ={3},{4},{5}, "
-                                      "IOR={6}/".format(j, Bfile, Quantity, devcLocSlab, Cord1, Cord2, IOR))
+                    with open(fds_AST, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocSlab, Cord1, Cord2, IOR))
+                    with open(fds_HF, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocSlab, Cord1, Cord2, IOR))
+                    with open(fds_HTC, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocSlab, Cord1, Cord2, IOR))
 
                 if units.get() == "mm":
                     devcLocSlab = begin/1000 + float(incX_slab.get()) / 2000
-                    with open(fdsFile, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = '{1}{0}', QUANTITY={2}, XYZ={3},{4},{5}, "
-                                      "IOR={6}/".format(j, Bfile, Quantity, devcLocSlab, Cord1, Cord2, IOR))
+                    with open(fds_AST, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocSlab, Cord1, Cord2, IOR))
+                    with open(fds_HF, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocSlab, Cord1, Cord2, IOR))
+                    with open(fds_HTC, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocSlab, Cord1, Cord2, IOR))
 
             if incrementDirectionSLB.get() == "Y":
                 if units.get() == "m":
                     devcLocSlabY = begin + float(incY_slab.get()) / 2
-                    with open(fdsFile, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = '{1}{0}', QUANTITY={2}, XYZ={3},{4},{5}, "
-                                      "IOR={6}/".format(j, Bfile, Quantity, Cord1, devcLocSlabY, Cord2, IOR))
+                    with open(fds_AST, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, Cord1, devcLocSlabY, Cord2, IOR))
+                    with open(fds_HF, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, Cord1, devcLocSlabY, Cord2, IOR))
+                    with open(fds_HTC, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, Cord1, devcLocSlabY, Cord2, IOR))
 
                 if units.get() == "mm":
                     devcLocSlabY = begin/1000 + float(incY_slab.get()) / 2000
-                    with open(fdsFile, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = '{1}{0}', QUANTITY={2}, XYZ={3},{4},{5}, "
-                                      "IOR={6}/".format(j, Bfile, Quantity, Cord1, devcLocSlabY, Cord2, IOR))
+                    with open(fds_AST, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, Cord1, devcLocSlabY, Cord2, IOR))
+                    with open(fds_HF, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, Cord1, devcLocSlabY, Cord2, IOR))
+                    with open(fds_HTC, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, Cord1, devcLocSlabY, Cord2, IOR))
 
             j += 1
             begin += increment
@@ -648,28 +688,52 @@ def fdsFileMaker(begin, final, increment, Bfile, Quantity, Cord1, Cord2, IOR):
             if incrementDirectionTRUSS.get() == "X":
                 if units.get() == "m":
                     devcLocTruss = begin + float(incXTruss.get()) / 2
-                    with open(fdsFile, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = '{1}{0}', QUANTITY={2}, XYZ={3},{4},{5}, "
-                                      "IOR={6}/".format(j, Bfile, Quantity, devcLocTruss, Cord1, Cord2, IOR))
+                    with open(fds_AST, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
+                    with open(fds_HF, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
+                    with open(fds_HTC, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
 
                 if units.get() == "mm":
                     devcLocTruss = begin/1000 + float(incXTruss.get()) / 2000
-                    with open(fdsFile, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = '{1}{0}', QUANTITY={2}, XYZ={3},{4},{5}, "
-                                      "IOR={6}/".format(j, Bfile, Quantity, devcLocTruss, Cord1, Cord2, IOR))
+                    with open(fds_AST, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
+                    with open(fds_HF, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
+                    with open(fds_HTC, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
 
             if incrementDirectionTRUSS.get() == "Y":
                 if units.get() == "m":
                     devcLocTrussY = begin + float(incYTruss.get()) / 2
-                    with open(fdsFile, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = '{1}{0}', QUANTITY={2}, XYZ={3},{4},{5}, "
-                                      "IOR={6}/".format(j, Bfile, Quantity, Cord1, devcLocTrussY, Cord2, IOR))
+                    with open(fds_AST, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, Cord1, devcLocTrussY, Cord2, IOR))
+                    with open(fds_HF, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3},  "
+                                      "IOR={4}/".format(j, Cord1, devcLocTrussY, Cord2, IOR))
+                    with open(fds_HTC, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, Cord1, devcLocTrussY, Cord2, IOR))
 
                 if units.get() == "mm":
                     devcLocTrussY = begin/1000 + float(incYTruss.get()) / 2000
-                    with open(fdsFile, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = '{1}{0}', QUANTITY={2}, XYZ={3},{4},{5}, "
-                                      "IOR={6}/".format(j, Bfile, Quantity, Cord1, devcLocTrussY, Cord2, IOR))
+                    with open(fds_AST, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, Cord1, devcLocTrussY, Cord2, IOR))
+                    with open(fds_HF, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3},  "
+                                      "IOR={4}/".format(j, Cord1, devcLocTrussY, Cord2, IOR))
+                    with open(fds_HTC, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, Cord1, devcLocTrussY, Cord2, IOR))
 
             j += 1
             begin += increment
@@ -679,28 +743,52 @@ def fdsFileMaker(begin, final, increment, Bfile, Quantity, Cord1, Cord2, IOR):
             if incrementDirectionBEAM.get() == "X":
                 if units.get() == "m":
                     devcLocBeamX = begin + float(incX_Beam.get()) / 2
-                    with open(fdsFile, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = '{1}{0}', QUANTITY={2}, XYZ={3},{4},{5}, "
-                                      "IOR={6}/".format(j, Bfile, Quantity, devcLocBeamX, Cord1, Cord2, IOR))
+                    with open(fds_AST, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3},"
+                                      "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
+                    with open(fds_HF, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3},"
+                                      "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
+                    with open(fds_HTC, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3},"
+                                      "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
 
                 if units.get() == "mm":
                     devcLocBeamX = begin/1000 + float(incX_Beam.get()) / 2000
-                    with open(fdsFile, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = '{1}{0}', QUANTITY={2}, XYZ={3},{4},{5}, "
-                                      "IOR={6}/".format(j, Bfile, Quantity, devcLocBeamX, Cord1, Cord2, IOR))
+                    with open(fds_AST, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3},"
+                                      "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
+                    with open(fds_HF, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3},"
+                                      "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
+                    with open(fds_HTC, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3},"
+                                      "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
 
             if incrementDirectionBEAM.get() == "Y":
                 if units.get() == "m":
                     devcLocBeamY = begin + float(incY_Beam.get()) / 2
-                    with open(fdsFile, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = '{1}{0}', QUANTITY={2}, XYZ={3},{4},{5}, "
-                                      "IOR={6}/".format(j, Bfile, Quantity, Cord1, devcLocBeamY, Cord2, IOR))
+                    with open(fds_AST, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, Cord1, devcLocBeamY, Cord2, IOR))
+                    with open(fds_HF, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, Cord1, devcLocBeamY, Cord2, IOR))
+                    with open(fds_HTC, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, Cord1, devcLocBeamY, Cord2, IOR))
 
                 if units.get() == "mm":
                     devcLocBeamY = begin/1000 + float(incY_Beam.get()) / 2000
-                    with open(fdsFile, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = '{1}{0}', QUANTITY={2}, XYZ={3},{4},{5}, "
-                                      "IOR={6}/".format(j, Bfile, Quantity, Cord1, devcLocBeamY, Cord2, IOR))
+                    with open(fds_AST, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, Cord1, devcLocBeamY, Cord2, IOR))
+                    with open(fds_HF, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, Cord1, devcLocBeamY, Cord2, IOR))
+                    with open(fds_HTC, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3}, "
+                                      "IOR={4}/".format(j, Cord1, devcLocBeamY, Cord2, IOR))
 
             j += 1
             begin += increment
@@ -1162,17 +1250,15 @@ def outputData():
     global iEle
     global jEle
     '''This part of the code makes devices for FDS using the above functions "fdsFileMaker"'''
-    if fdsDevices.get() == "ADIABATIC SURFACE TEMPERATURE":
+    if fdsDevices.get() == "Yes":
         if structureType.get() == "Columns":
             i = float(z_Column.get())
             m = float(columnHeight.get())
             var = float(inc_Column.get())
             if units.get() == "m":
-                fdsFileMaker(i, m, var, 'AST', "'{0}'".format(fdsDevices.get()), float(x_Column.get()),
-                             float(y_Column.get()), iorColumn.get())
+                fdsFileMaker(i, m, var, float(x_Column.get()), float(y_Column.get()), iorColumn.get())
             if units.get() == "mm":
-                fdsFileMaker(i, m, var, 'AST', "'{0}'".format(fdsDevices.get()), float(x_Column.get())/1000,
-                             float(y_Column.get())/1000, iorColumn.get())
+                fdsFileMaker(i, m, var, float(x_Column.get())/1000, float(y_Column.get())/1000, iorColumn.get())
 
         if structureType.get() == "Beam":
             if incrementDirectionBEAM.get() == "X":
@@ -1184,11 +1270,12 @@ def outputData():
                     BeamLengthX = float(x_LenBeam.get())
                     incrementX_Beam = float(incX_Beam.get())
                     if units.get() == "m":
-                        fdsFileMaker(initialX_Beam, BeamLengthX, incrementX_Beam, 'AST', "'{0}'".format(fdsDevices.get()),
-                                     initialY_Beam, float(lLimitTruss.get()), iorTruss.get())
+                        fdsFileMaker(initialX_Beam, BeamLengthX, incrementX_Beam, initialY_Beam,
+                                     float(lLimitTruss.get()), iorTruss.get())
                     if units.get() == "mm":
-                        fdsFileMaker(initialX_Beam, BeamLengthX, incrementX_Beam, 'AST', "'{0}'".format(fdsDevices.get()),
-                                     initialY_Beam/1000, float(lLimitTruss.get())/1000, iorTruss.get())
+                        fdsFileMaker(initialX_Beam, BeamLengthX, incrementX_Beam, initialY_Beam/1000,
+                                     float(lLimitTruss.get())/1000, iorTruss.get())
+
                     initialY_Beam += incrementY_Beam
 
             if incrementDirectionBEAM.get() == "Y":
@@ -1200,11 +1287,11 @@ def outputData():
                     incrementY_Beam = float(incY_Beam.get())
                     BeamLengthY = float(y_LenBeam.get())
                     if units.get() == "m":
-                        fdsFileMaker(initialY_Beam, BeamLengthY, incrementY_Beam, 'AST', "'{0}'".format(fdsDevices.get()),
-                                     initialX_Beam, float(lLimitTruss.get()), iorTruss.get())
+                        fdsFileMaker(initialY_Beam, BeamLengthY, incrementY_Beam, initialX_Beam,
+                                     float(lLimitTruss.get()), iorTruss.get())
                     if units.get() == "mm":
-                        fdsFileMaker(initialY_Beam, BeamLengthY, incrementY_Beam, 'AST', "'{0}'".format(fdsDevices.get()),
-                                     initialX_Beam/1000, float(lLimitTruss.get())/1000, iorTruss.get())
+                        fdsFileMaker(initialY_Beam, BeamLengthY, incrementY_Beam, initialX_Beam/1000,
+                                     float(lLimitTruss.get())/1000, iorTruss.get())
                     initialX_Beam += incrementX_Beam
 
         if structureType.get() == "Truss":
@@ -1217,11 +1304,11 @@ def outputData():
                     TrussLength = float(X_lenTruss.get())
                     incrementX_Truss = float(incXTruss.get())
                     if units.get() == "m":
-                        fdsFileMaker(initialX_Truss, TrussLength, incrementX_Truss, 'AST', "'{0}'".format(fdsDevices.get()),
-                                     initialY_Truss, float(lLimitTruss.get()), iorTruss.get())
+                        fdsFileMaker(initialX_Truss, TrussLength, incrementX_Truss, initialY_Truss,
+                                     float(lLimitTruss.get()), iorTruss.get())
                     if units.get() == "mm":
-                        fdsFileMaker(initialX_Truss, TrussLength, incrementX_Truss, 'AST', "'{0}'".format(fdsDevices.get()),
-                                     initialY_Truss/1000, float(lLimitTruss.get())/1000, iorTruss.get())
+                        fdsFileMaker(initialX_Truss, TrussLength, incrementX_Truss, initialY_Truss/1000,
+                                     float(lLimitTruss.get())/1000, iorTruss.get())
                     initialY_Truss += incrementY_Truss
 
             if incrementDirectionTRUSS.get() == "Y":
@@ -1233,10 +1320,10 @@ def outputData():
                     incrementY_Truss = float(incYTruss.get())
                     TrussWidth = float(Y_lenTruss.get())
                     if units.get() == "m":
-                        fdsFileMaker(initialY_Truss, TrussWidth, incrementY_Truss, 'AST', "'{0}'".format(fdsDevices.get()),
+                        fdsFileMaker(initialY_Truss, TrussWidth, incrementY_Truss,
                                      initialX_Truss, float(lLimitTruss.get()), iorTruss.get())
                     if units.get() == "mm":
-                        fdsFileMaker(initialY_Truss, TrussWidth, incrementY_Truss, 'AST', "'{0}'".format(fdsDevices.get()),
+                        fdsFileMaker(initialY_Truss, TrussWidth, incrementY_Truss,
                                      initialX_Truss/1000, float(lLimitTruss.get())/1000, iorTruss.get())
                     initialX_Truss += incrementX_Truss
 
@@ -1250,10 +1337,10 @@ def outputData():
                     lengthX_SLAB = float(xLen_slab.get())
                     incrementX_SLAB = float(incX_slab.get())
                     if units.get() == "m":
-                        fdsFileMaker(initialX_SLAB, lengthX_SLAB, incrementX_SLAB, 'AST', "'{0}'".format(fdsDevices.get()),
+                        fdsFileMaker(initialX_SLAB, lengthX_SLAB, incrementX_SLAB,
                                      initialY_Slab, float(z_slab.get()), ior_slab.get())
                     if units.get() == "mm":
-                        fdsFileMaker(initialX_SLAB, lengthX_SLAB, incrementX_SLAB, 'AST', "'{0}'".format(fdsDevices.get()),
+                        fdsFileMaker(initialX_SLAB, lengthX_SLAB, incrementX_SLAB,
                                      initialY_Slab/1000, float(z_slab.get())/1000, ior_slab.get())
                     initialY_Slab += incrementY_Slab
 
@@ -1266,10 +1353,10 @@ def outputData():
                     incrementY_Slab = float(incY_slab.get())
                     slabYWidth = float(widthY_slab.get())
                     if units.get() == "m":
-                        fdsFileMaker(initialY_Slab, slabYWidth, incrementY_Slab, 'AST', "'{0}'".format(fdsDevices.get()),
+                        fdsFileMaker(initialY_Slab, slabYWidth, incrementY_Slab,
                                      initialX_SLAB, float(z_slab.get()), ior_slab.get())
                     if units.get() == "mm":
-                        fdsFileMaker(initialY_Slab, slabYWidth, incrementY_Slab, 'AST', "'{0}'".format(fdsDevices.get()),
+                        fdsFileMaker(initialY_Slab, slabYWidth, incrementY_Slab,
                                      initialX_SLAB/1000, float(z_slab.get())/1000, ior_slab.get())
                     initialX_SLAB += incrementX_SLAB
     ##########################################-----functions for OpenSEES files
@@ -1741,8 +1828,6 @@ def savingHTFile():  # it allows the user to proceed the chooses module
 
 tk.Button(frameHTAnalysis, text="Save HT File", command=savingHTFile, width=10, height=1).grid(row=1, column=3)
 
-"""This part of code removes the duplicate items """
-
 
 def elementLoad():
     global onlyTrussEle, finalTrussEle, ELEMENT_SET_COL, ELEMENT_SET_Truss
@@ -1777,5 +1862,17 @@ def elementLoad():
 
 
 tk.Button(window2, text="Update Ele. Load", command=elementLoad, width=15, height=1).grid(row=8, column=0, padx=5, pady=5)
+
+
+def singleFDS():
+    fdsFiles = [fds_AST, fds_HF, fds_HTC]
+    with open(fdsFile, 'w') as finalFile:
+        for fname in fdsFiles:
+            with open(fname) as infile:
+                for line in infile:
+                    finalFile.write(line)
+
+
+tk.Button(window2, text="Update FDS File", command=singleFDS, width=15, height=1).grid(row=9, column=0, padx=5, pady=5)
 
 window2.mainloop()
