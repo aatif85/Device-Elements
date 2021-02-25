@@ -583,6 +583,7 @@ j = 1  # counter for FDS devices
 j1 = 1  # counter for entities
 j2 = 1  # counter for mesh
 j3 = 1  # counter for node set
+jNS = 1  # counter for new node set
 j4 = 1  # counter for fire model
 j5 = 1  # counter for heat flux
 j6 = 1  # counter for recorder
@@ -837,7 +838,7 @@ def nodeSETFaces(intValue3, maxL3, increment3, faces):
 
 def nodeSETLoc(intValue3, maxL3, increment3, entityDepth):
     global j3
-    global j7
+    global j7, jNS
     while intValue3 < maxL3:  # creating Node Set
         with open(osFile, 'a') as fileOS:
             webH = round(float(beamHeight.get()) - 2*float(flangeThickness.get()), 4)
@@ -851,6 +852,8 @@ def nodeSETLoc(intValue3, maxL3, increment3, entityDepth):
                 j3 += 1
                 fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {2} \t -Locx 0.0  \t"
                                   " -Locy {1}\n".format(j3, entityDepth/2, j7))
+                j3 += 1
+                fileOS.writelines("HTNodeSet \t {0} \t -NodeSet {1} {2}\n".format(j3, j3-2, j3-1))
 
             if selectEntity.get() == "Isection":
                 if deptLocation.get() == "5":
@@ -867,7 +870,12 @@ def nodeSETLoc(intValue3, maxL3, increment3, entityDepth):
                     j3 += 1
                     fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {2} \t -Locx 0.0  \t"
                                       " -Locy {1}\n".format(j3, entityDepth/2, j7))
-                if deptLocation.get() == "9":
+
+                    j3 += 1
+                    fileOS.writelines("HTNodeSet \t {0} \t -NodeSet {1} {2} {3} {4} "
+                                      "{5}\n".format(j3, j3-5, j3-4, j3-3, j3-2, j3-1))
+
+            if deptLocation.get() == "9":
                     fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {2} \t -Locx 0.0  \t"
                                       " -Locy -{1}\n".format(j3, entityDepth/2, j7))
                     j3 += 1
@@ -893,6 +901,9 @@ def nodeSETLoc(intValue3, maxL3, increment3, entityDepth):
                     j3 += 1
                     fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {2} \t -Locx 0.0  \t "
                                       "-Locy {1}\n".format(j3, entityDepth/2, j7))
+                    j3 += 1
+                    fileOS.writelines("HTNodeSet \t {0} \t -NodeSet {1} {2} {3} {4} {5} {6} {7} {8} "
+                                      "{9}\n".format(j3, j3-9, j3-8, j3-7, j6-6, j3-5, j3-4, j3-3, j3-2, j3-1))
 
             if selectEntity.get() == "Block":
                 if deptLocation.get() == "5":
@@ -970,45 +981,23 @@ def heatFlux(intValue5, maxL5, increment5, HFfaces, HTConstants):
 
 
 def htRecorder(intValue6, maxL6, increment6):
-    global j6
+    global j6, jNS
     while intValue6 < maxL6:  # creating recorder
         with open(osFile, 'a') as fileOS:
             if selectNodeSet.get() == "Faces":
                 fileOS.writelines("HTRecorder \t -file \t temp{0}.dat  \t -NodeSet \t {0};\n".format(j6))
             if selectNodeSet.get() == "User Defined":
                 if deptLocation.get() == "2":
-                    fileOS.writelines("HTRecorder \t -file \t nodeSet{0}.dat  \t -NodeSet \t {0};\n".format(j6))
-                    j6 += 1
-                    fileOS.writelines("HTRecorder \t -file \t nodeSet{0}.dat  \t -NodeSet \t {0};\n".format(j6))
+                    jNS = jNS + 2
+                    fileOS.writelines("HTRecorder \t -file \t temp{0}.dat  \t -NodeSet \t {1};\n".format(j6, jNS))
                 if deptLocation.get() == "5":
-                    fileOS.writelines("HTRecorder \t -file \t nodeSet{0}.dat  \t -NodeSet \t {0};\n".format(j6))
-                    j6 += 1
-                    fileOS.writelines("HTRecorder \t -file \t nodeSet{0}.dat  \t -NodeSet \t {0};\n".format(j6))
-                    j6 += 1
-                    fileOS.writelines("HTRecorder \t -file \t nodeSet{0}.dat  \t -NodeSet \t {0};\n".format(j6))
-                    j6 += 1
-                    fileOS.writelines("HTRecorder \t -file \t nodeSet{0}.dat  \t -NodeSet \t {0};\n".format(j6))
-                    j6 += 1
-                    fileOS.writelines("HTRecorder \t -file \t nodeSet{0}.dat  \t -NodeSet \t {0};\n".format(j6))
+                    jNS = jNS + 5
+                    fileOS.writelines("HTRecorder \t -file \t temp{0}.dat  \t -NodeSet \t {1};\n".format(j6, jNS))
                 if deptLocation.get() == "9":
-                    fileOS.writelines("HTRecorder \t -file \t nodeSet{0}.dat  \t -NodeSet \t {0};\n".format(j6))
-                    j6 += 1
-                    fileOS.writelines("HTRecorder \t -file \t nodeSet{0}.dat  \t -NodeSet \t {0};\n".format(j6))
-                    j6 += 1
-                    fileOS.writelines("HTRecorder \t -file \t nodeSet{0}.dat  \t -NodeSet \t {0};\n".format(j6))
-                    j6 += 1
-                    fileOS.writelines("HTRecorder \t -file \t nodeSet{0}.dat  \t -NodeSet \t {0};\n".format(j6))
-                    j6 += 1
-                    fileOS.writelines("HTRecorder \t -file \t nodeSet{0}.dat  \t -NodeSet \t {0};\n".format(j6))
-                    j6 += 1
-                    fileOS.writelines("HTRecorder \t -file \t nodeSet{0}.dat  \t -NodeSet \t {0};\n".format(j6))
-                    j6 += 1
-                    fileOS.writelines("HTRecorder \t -file \t nodeSet{0}.dat  \t -NodeSet \t {0};\n".format(j6))
-                    j6 += 1
-                    fileOS.writelines("HTRecorder \t -file \t nodeSet{0}.dat  \t -NodeSet \t {0};\n".format(j6))
-                    j6 += 1
-                    fileOS.writelines("HTRecorder \t -file \t nodeSet{0}.dat  \t -NodeSet \t {0};\n".format(j6))
+                    jNS = jNS + 9
+                    fileOS.writelines("HTRecorder \t -file \t temp{0}.dat  \t -NodeSet \t {1};\n".format(j6, jNS))
         j6 += 1
+        jNS += 1
         intValue6 += increment6
 
 
