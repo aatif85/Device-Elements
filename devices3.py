@@ -1260,10 +1260,10 @@ def outputData():
                     incrementX_Beam = float(incX_Beam.get())
                     if units.get() == "m":
                         fdsFileMaker(initialX_Beam, BeamLengthX, incrementX_Beam, initialY_Beam,
-                                     float(lLimitTruss.get()), iorTruss.get())
+                                     float(z_Beam.get()), ior_Beam.get())
                     if units.get() == "mm":
                         fdsFileMaker(initialX_Beam, BeamLengthX, incrementX_Beam, initialY_Beam/1000,
-                                     float(lLimitTruss.get())/1000, iorTruss.get())
+                                     float(z_Beam.get())/1000, ior_Beam.get())
 
                     initialY_Beam += incrementY_Beam
 
@@ -1277,10 +1277,10 @@ def outputData():
                     BeamLengthY = float(y_LenBeam.get())
                     if units.get() == "m":
                         fdsFileMaker(initialY_Beam, BeamLengthY, incrementY_Beam, initialX_Beam,
-                                     float(lLimitTruss.get()), iorTruss.get())
+                                     float(z_Beam.get()), ior_Beam.get())
                     if units.get() == "mm":
                         fdsFileMaker(initialY_Beam, BeamLengthY, incrementY_Beam, initialX_Beam/1000,
-                                     float(lLimitTruss.get())/1000, iorTruss.get())
+                                     float(z_Beam.get())/1000, ior_Beam.get())
                     initialX_Beam += incrementX_Beam
 
         if structureType.get() == "Truss":
