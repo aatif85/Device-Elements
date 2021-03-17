@@ -284,7 +284,6 @@ loc_Drop.config(width=5)
 loc_Drop.grid(row=8, column=4, padx=5, pady=5)
 tk.Label(OSFrame, width=15, text="Number of Points", anchor='e').grid(row=8, column=3, padx=3, pady=5)
 
-
 #####################################------Entries for Columns------##########################################
 
 colFrame = tk.LabelFrame(window2, text="Columns Inputs", padx=5, pady=5)
@@ -1632,23 +1631,24 @@ def outputData():
                     EleSet2.write('\n eleLoad -ele {0} -type -shellThermal -source "temp{1}.dat" {2}'
                                   .format(f, counter, sectionShell.get()))
 
-        def ele_set_genCol(counter):   # this method generate file  and write on the file, will take 2 items in each line
+        def ele_set_genCol(counter):
             with open(ELEMENT_SET_COL, 'a', newline='') as EleSet:
                 EleSet.write("\n#This is ElementSet{0} for Columns\n".format(counter))
                 writer = csv.writer(EleSet)
                 writer.writerow(elementListBC)
 
-        def ele_set_genBeam(counter):   # this method generate file  and write on the file, will take 2 items in each line
+        def ele_set_genBeam(counter):
             with open(ELEMENT_SET_BEAM, 'a', newline='') as EleSet:
                 EleSet.write("\n#This is ElementSet{0} for Beam\n".format(counter))
                 writer = csv.writer(EleSet)
                 writer.writerow(elementListBC)
 
-        def ele_set_genTruss(counter):   # this method generate file  and write on the file, will take 2 items in each line
+        def ele_set_genTruss(counter):
             with open(ELEMENT_SET_Truss, 'a', newline='') as EleSet:
                 EleSet.write("\n#This is ElementSet{0} for Truss\n".format(counter))
                 writer = csv.writer(EleSet)
-                writer.writerow(elementListBC)
+                for iItem in range(0, len(elementListBC), 1):  # step by threes.
+                    writer.writerow(elementListBC[iItem:iItem+1])
 
         def ele_set_genBTCol(counter):
             with open(onlyColEle, 'a', newline='') as EleSet2:
