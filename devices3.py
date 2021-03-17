@@ -15,6 +15,7 @@ import os
 import csv
 import pandas as pd
 import numpy as np
+import re
 
 
 # class for Scroller
@@ -120,7 +121,8 @@ onlyColEle = 'ElementFiles/Column_elementLoad.txt'  # makes element loads for co
 onlyBeamEle = 'ElementFiles/Beam_elementLoad.txt'   # makes element loads for beam
 onlySlabEle = 'ElementFiles/Slab_elementLoad.txt'   # makes element loads for slab
 onlyTrussEle = 'ElementFiles/truss1_elementLoad.txt'  # makes element loads for truss
-finalTrussEle = 'ElementFiles/truss_elementLoadFinal.txt'   # makes element loads for truss after removing duplicate
+dupTrussEle = 'ElementFiles/truss_elementLoadFinal.txt'   # makes element loads for truss after removing duplicate
+finalTrussFile = 'ElementFiles/test.txt'
 Final_EleSET2 = 'Final_EleSet.txt'   # makes final file containing updated files
 
 '''Drop menu for the devices, if user wants to create devices at the same place, better just copy
@@ -1635,13 +1637,15 @@ def outputData():
             with open(ELEMENT_SET_COL, 'a', newline='') as EleSet:
                 EleSet.write("\n#This is ElementSet{0} for Columns\n".format(counter))
                 writer = csv.writer(EleSet)
-                writer.writerow(elementListBC)
+                for iItem in range(0, len(elementListBC), 1):  # step by threes.
+                    writer.writerow(elementListBC[iItem:iItem+1])
 
         def ele_set_genBeam(counter):
             with open(ELEMENT_SET_BEAM, 'a', newline='') as EleSet:
                 EleSet.write("\n#This is ElementSet{0} for Beam\n".format(counter))
                 writer = csv.writer(EleSet)
-                writer.writerow(elementListBC)
+                for iItem in range(0, len(elementListBC), 1):  # step by threes.
+                    writer.writerow(elementListBC[iItem:iItem+1])
 
         def ele_set_genTruss(counter):
             with open(ELEMENT_SET_Truss, 'a', newline='') as EleSet:
@@ -1819,25 +1823,38 @@ tk.Button(frameHTAnalysis, text="Save HT File", command=savingHTFile, width=10, 
 
 
 def elementLoad():
-    global onlyTrussEle, finalTrussEle, ELEMENT_SET_COL, ELEMENT_SET_Truss
+    global onlyTrussEle, dupTrussEle, ELEMENT_SET_COL, ELEMENT_SET_Truss
     lines = np.loadtxt(ELEMENT_SET_COL, comments="#", delimiter=",", unpack=False)
     a1 = np.array(lines)
-    lines2 = np.loadtxt(ELEMENT_SET_Truss, comments="#", delimiter=",", unpack=False)
+    lines2 = np.genfromtxt(ELEMENT_SET_Truss, comments="#", delimiter=",", unpack=False)
     a2 = np.array(lines2)
     y = np.intersect1d(a1, a2)
     myList = [int(x) for x in y]
     dupItems = list(map(str, myList))
     print(myList)
 
-    def should_remove_line(line, stop_words):
-        return any([word in line for word in stop_words])
+    def should_remove_line(loadData, stop_words):
+        return re.search(r"\b{}\b".format(stop_words), loadData)
 
-    with open(onlyTrussEle) as f, open(finalTrussEle, "w") as working:
+    with open(onlyTrussEle) as f, open(dupTrussEle, "w") as working:
         for line in f:
-            if not should_remove_line(line, dupItems):
-                working.write(line)
+            for item in dupItems:
+                if should_remove_line(line, item):
+                    working.write(line)
 
-    eleFileList = [onlyColEle, onlyBeamEle, finalTrussEle, onlySlabEle]
+    with open(onlyTrussEle) as source:
+        lines_src = source.readlines()
+    with open(dupTrussEle) as source2:
+        lines_src2 = source2.readlines()
+
+    finalFile = open(finalTrussFile, "w")
+    for data in lines_src:
+        if data not in lines_src2:
+            finalFile.write(data)
+
+    finalFile.close()
+
+    eleFileList = [onlyColEle, onlyBeamEle, finalTrussFile, onlySlabEle]
 
     with open(Final_EleSET2, 'w') as finalFile:
         for fname in eleFileList:
@@ -1848,6 +1865,7 @@ def elementLoad():
             with open(fname) as infile:
                 for line in infile:
                     finalFile.write(line)
+
 
 
 tk.Button(window2, text="Update Ele. Load", command=elementLoad, width=15, height=1).grid(row=8, column=0, padx=5, pady=5)
