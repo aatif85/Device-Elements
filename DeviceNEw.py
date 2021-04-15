@@ -663,8 +663,8 @@ def fdsFileMaker(begin, final, increment, Cord1, Cord2, IOR):
                 if units.get() == "mm":
                     devcLocSlab = begin/1000 + float(incX_slab.get()) / 2000
                     with open(fds_AST, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3}, "
-                                      "IOR={4}/".format(j, devcLocSlab, Cord1, Cord2, IOR))
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', "
+                                      "XYZ={1},{2},{3}, IOR={4}/".format(j, devcLocSlab, Cord1, Cord2, IOR))
                     with open(fds_HF, 'a') as f1:
                         f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, devcLocSlab, Cord1, Cord2, IOR))
@@ -1226,6 +1226,33 @@ def nodes1():  # this method is for columns
     matchingNodes = [key for key, (X, Y, Z) in nodesDictionary.items()
                      if (X == float(x_Column.get())) and (Y == float(y_Column.get())) and
                      (lowerValColumn <= Z <= upperValColumn)]
+    return matchingNodes
+
+
+def nodesB1():  # this method is when member is in Y direction and  X is fixed
+    matchingNodes = [key for key, (X, Y, Z) in nodesDictionary.items()
+                     if (X == float(x_Beam.get())) and beginYBeam <= Y <= beginYBeam + float(incY_Beam.get())
+                     and Z == float(z_Beam.get())]
+    return matchingNodes
+
+
+def nodesB2():  # this method is when member is in Y direction and Z is fixed and X is in range
+    matchingNodes = [key for key, (X, Y, Z) in nodesDictionary.items()
+                     if (beginXBeam <= X <= beginXBeam + float(incX_Beam.get()) and Y == float(y_Beam.get())
+                     and Z == float(z_Beam.get()))]
+    return matchingNodes
+
+def nodesT1():  # this method is when member is in Y direction and  X is fixed
+    matchingNodes = [key for key, (X, Y, Z) in nodesDictionary.items()
+                     if (X == float(xTruss.get())) and beginYTruss <= Y <= beginYTruss + float(incYTruss.get())
+                     and Z == float(lLimitTruss.get())]
+    return matchingNodes
+
+
+def nodesT2():  # this method is when member is in Y direction and Z is fixed and X is in range
+    matchingNodes = [key for key, (X, Y, Z) in nodesDictionary.items()
+                     if (beginXTruss <= X <= beginXTruss + float(incXTruss.get()) and Y == float(yTruss.get())
+                         and Z == float(lLimitTruss.get()))]
     return matchingNodes
 
 
