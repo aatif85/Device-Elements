@@ -11,6 +11,7 @@ import os
 import csv
 import pandas as pd
 import numpy as np
+from re import sub
 import re
 import sys
 
@@ -56,26 +57,14 @@ def elementLoad():
     print(myList)
     print(dupItems)
 
-    def should_remove_line(loadData, stop_words):
-        return re.search(r"\b{}\b".format(stop_words), loadData)
-
-    with open(onlyTrussEle) as f, open(dupTrussEle, "w") as working:
-        for line in f:
-            for item in dupItems:
-                if should_remove_line(line, item):
-                    working.write(line)
-
-    with open(onlyTrussEle) as source:
-        lines_src = source.readlines()
-    with open(dupTrussEle) as source2:
-        lines_src2 = source2.readlines()
-
-    finalFile = open(finalTrussFile, "w")
-    for data in lines_src:
-        if data not in lines_src2:
-            finalFile.write(data)
-
-    finalFile.close()
+    with open(onlyTrussEle) as f:
+        file = f.read().split('\n')
+    for dupInterger in dupItems:
+        for i in range(len(file)):
+            file[i] = sub(r'{}'.format(dupInterger), '', file[i])
+    #print(file)
+    with open(finalTrussFile, 'w') as f1:
+        f1.writelines(["%s\n" % item for item in file])
 
     eleFileList = [onlyColEle, onlyBeamEle, finalTrussFile, onlySlabEle]
 

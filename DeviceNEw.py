@@ -125,6 +125,16 @@ dupTrussEle = 'ElementFiles/truss_elementLoadFinal.txt'   # makes element loads 
 finalTrussFile = 'ElementFiles/test.txt'
 Final_EleSET2 = 'Final_EleSet.txt'   # makes final file containing updated files
 
+
+Final_EleSET3 = 'Final_EleSetSL.tcl'   # makes final file containing updated files
+ELEMENT_SET_COL_SL = 'ElementFiles/SingleLine/Col_elementset.txt'  # makes element for columns
+ELEMENT_SET_BEAM_SL = 'ElementFiles/SingleLine/Beam_elementset.txt'  # makes element for beam
+ELEMENT_SET_Truss_SL = 'ElementFiles/SingleLine/Truss_elementset.txt'  # makes element for Truss
+onlyColEle_SL = 'ElementFiles/SingleLine/Column_elementLoad.txt'  # makes element loads for columns
+onlyBeamEle_SL = 'ElementFiles/SingleLine/Beam_elementLoad.txt'   # makes element loads for beam
+onlySlabEle_SL = 'ElementFiles/SingleLine/Slab_elementLoad.txt'   # makes element loads for slab
+onlyTrussEle_SL = 'ElementFiles/SingleLine/truss1_elementLoad.txt'  # makes element loads for truss
+
 '''Drop menu for the devices, if user wants to create devices at the same place, better just copy
  paste the devices and  name accordingly'''
 
@@ -600,8 +610,12 @@ jEle = 1  # counter for shell elements, so used for slabs in OpenSEES
 
 
 def fdsFileMaker(begin, final, increment, Cord1, Cord2, IOR):
+    createFolder('./ElementFiles')
     global j
     if structureType.get() == "Columns":
+        with open(fds_AST, 'a') as f1:
+            f1.writelines("\n&OBST ID='Column{0}', XB={1},{2},{3},{4},{5},{6}, /".format(j, Cord1 - 0.5, Cord1 + 0.5,
+                                Cord2, Cord2 + 0.5, begin, final))
         while begin < final:
             if units.get() == "m":
                 devcLocCol = begin + float(inc_Column.get()) / 2
@@ -635,51 +649,53 @@ def fdsFileMaker(begin, final, increment, Cord1, Cord2, IOR):
             if incrementDirectionSLB.get() == "X":
                 if units.get() == "m":
                     devcLocSlab = begin + float(incX_slab.get()) / 2
+                    y_location = Cord1 + float(incY_slab.get()) / 2
                     with open(fds_AST, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3}, "
-                                      "IOR={4}/".format(j, devcLocSlab, Cord1, Cord2, IOR))
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocSlab, y_location, Cord2, IOR))
                     with open(fds_HF, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3}, "
-                                      "IOR={4}/".format(j, devcLocSlab, Cord1, Cord2, IOR))
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocSlab, y_location, Cord2, IOR))
                     with open(fds_HTC, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3}, "
-                                      "IOR={4}/".format(j, devcLocSlab, Cord1, Cord2, IOR))
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocSlab, y_location, Cord2, IOR))
 
                 if units.get() == "mm":
                     devcLocSlab = begin/1000 + float(incX_slab.get()) / 2000
                     with open(fds_AST, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, devcLocSlab, Cord1, Cord2, IOR))
                     with open(fds_HF, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, devcLocSlab, Cord1, Cord2, IOR))
                     with open(fds_HTC, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, devcLocSlab, Cord1, Cord2, IOR))
 
             if incrementDirectionSLB.get() == "Y":
                 if units.get() == "m":
                     devcLocSlabY = begin + float(incY_slab.get()) / 2
+                    x_Location = Cord1 + float(incX_slab.get()) / 2
                     with open(fds_AST, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3}, "
-                                      "IOR={4}/".format(j, Cord1, devcLocSlabY, Cord2, IOR))
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3}, "
+                                      "IOR={4}/".format(j, x_Location, devcLocSlabY, Cord2, IOR))
                     with open(fds_HF, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3}, "
-                                      "IOR={4}/".format(j, Cord1, devcLocSlabY, Cord2, IOR))
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3}, "
+                                      "IOR={4}/".format(j, x_Location, devcLocSlabY, Cord2, IOR))
                     with open(fds_HTC, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3}, "
-                                      "IOR={4}/".format(j, Cord1, devcLocSlabY, Cord2, IOR))
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3}, "
+                                      "IOR={4}/".format(j, x_Location, devcLocSlabY, Cord2, IOR))
 
                 if units.get() == "mm":
                     devcLocSlabY = begin/1000 + float(incY_slab.get()) / 2000
                     with open(fds_AST, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, Cord1, devcLocSlabY, Cord2, IOR))
                     with open(fds_HF, 'a') as f1:
                         f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3}, "
                                       "IOR={4}/".format(j, Cord1, devcLocSlabY, Cord2, IOR))
                     with open(fds_HTC, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, Cord1, devcLocSlabY, Cord2, IOR))
 
             j += 1
@@ -691,50 +707,50 @@ def fdsFileMaker(begin, final, increment, Cord1, Cord2, IOR):
                 if units.get() == "m":
                     devcLocTruss = begin + float(incXTruss.get()) / 2
                     with open(fds_AST, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
                     with open(fds_HF, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
                     with open(fds_HTC, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
 
                 if units.get() == "mm":
                     devcLocTruss = begin/1000 + float(incXTruss.get()) / 2000
                     with open(fds_AST, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
                     with open(fds_HF, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
                     with open(fds_HTC, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
 
             if incrementDirectionTRUSS.get() == "Y":
                 if units.get() == "m":
                     devcLocTrussY = begin + float(incYTruss.get()) / 2
                     with open(fds_AST, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, Cord1, devcLocTrussY, Cord2, IOR))
                     with open(fds_HF, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3},  "
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3},  "
                                       "IOR={4}/".format(j, Cord1, devcLocTrussY, Cord2, IOR))
                     with open(fds_HTC, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, Cord1, devcLocTrussY, Cord2, IOR))
 
                 if units.get() == "mm":
                     devcLocTrussY = begin/1000 + float(incYTruss.get()) / 2000
                     with open(fds_AST, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, Cord1, devcLocTrussY, Cord2, IOR))
                     with open(fds_HF, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3},  "
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3},  "
                                       "IOR={4}/".format(j, Cord1, devcLocTrussY, Cord2, IOR))
                     with open(fds_HTC, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, Cord1, devcLocTrussY, Cord2, IOR))
 
             j += 1
@@ -746,50 +762,50 @@ def fdsFileMaker(begin, final, increment, Cord1, Cord2, IOR):
                 if units.get() == "m":
                     devcLocBeamX = begin + float(incX_Beam.get()) / 2
                     with open(fds_AST, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3},"
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3},"
                                       "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
                     with open(fds_HF, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3},"
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3},"
                                       "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
                     with open(fds_HTC, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3},"
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3},"
                                       "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
 
                 if units.get() == "mm":
                     devcLocBeamX = begin/1000 + float(incX_Beam.get()) / 2000
                     with open(fds_AST, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3},"
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3},"
                                       "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
                     with open(fds_HF, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3},"
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3},"
                                       "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
                     with open(fds_HTC, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3},"
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3},"
                                       "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
 
             if incrementDirectionBEAM.get() == "Y":
                 if units.get() == "m":
                     devcLocBeamY = begin + float(incY_Beam.get()) / 2
                     with open(fds_AST, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, Cord1, devcLocBeamY, Cord2, IOR))
                     with open(fds_HF, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, Cord1, devcLocBeamY, Cord2, IOR))
                     with open(fds_HTC, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, Cord1, devcLocBeamY, Cord2, IOR))
 
                 if units.get() == "mm":
                     devcLocBeamY = begin/1000 + float(incY_Beam.get()) / 2000
                     with open(fds_AST, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, Cord1, devcLocBeamY, Cord2, IOR))
                     with open(fds_HF, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, Cord1, devcLocBeamY, Cord2, IOR))
                     with open(fds_HTC, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', {1},{2},{3}, "
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, Cord1, devcLocBeamY, Cord2, IOR))
 
             j += 1
@@ -877,34 +893,34 @@ def nodeSETLoc(intValue3, maxL3, increment3, entityDepth):
                                       "{5}\n".format(j3, j3-5, j3-4, j3-3, j3-2, j3-1))
 
             if deptLocation.get() == "9":
-                    fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {2} \t -Locx 0.0  \t"
-                                      " -Locy -{1}\n".format(j3, entityDepth/2, j7))
-                    j3 += 1
-                    fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {2} \t -Locx 0.0  \t"
-                                      " -Locy -{1}\n".format(j3, div2, j7))
-                    j3 += 1
-                    fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {2} \t -Locx 0.0  \t"
-                                      " -Locy -{1}\n".format(j3, div3, j7))
-                    j3 += 1
-                    fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {2} \t -Locx 0.0  \t"
-                                      " -Locy -{1}\n".format(j3, div4, j7))
-                    j3 += 1
-                    fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {1} \t -Locx 0.0  \t -Locy 0.0\n".format(j3, j7))
-                    j3 += 1
-                    fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {2} \t -Locx 0.0  \t"
-                                      " -Locy {1}\n".format(j3, div4, j7))
-                    j3 += 1
-                    fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {2} \t -Locx 0.0  \t"
-                                      " -Locy {1}\n".format(j3, div3, j7))
-                    j3 += 1
-                    fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {2} \t -Locx 0.0  \t"
-                                      " -Locy {1}\n".format(j3, div2, j7))
-                    j3 += 1
-                    fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {2} \t -Locx 0.0  \t "
-                                      "-Locy {1}\n".format(j3, entityDepth/2, j7))
-                    j3 += 1
-                    fileOS.writelines("HTNodeSet \t {0} \t -NodeSet {1} {2} {3} {4} {5} {6} {7} {8} "
-                                      "{9}\n".format(j3, j3-9, j3-8, j3-7, j6-6, j3-5, j3-4, j3-3, j3-2, j3-1))
+                fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {2} \t -Locx 0.0  \t"
+                                  " -Locy -{1}\n".format(j3, entityDepth/2, j7))
+                j3 += 1
+                fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {2} \t -Locx 0.0  \t"
+                                  " -Locy -{1}\n".format(j3, div2, j7))
+                j3 += 1
+                fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {2} \t -Locx 0.0  \t"
+                                  " -Locy -{1}\n".format(j3, div3, j7))
+                j3 += 1
+                fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {2} \t -Locx 0.0  \t"
+                                  " -Locy -{1}\n".format(j3, div4, j7))
+                j3 += 1
+                fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {1} \t -Locx 0.0  \t -Locy 0.0\n".format(j3, j7))
+                j3 += 1
+                fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {2} \t -Locx 0.0  \t"
+                                  " -Locy {1}\n".format(j3, div4, j7))
+                j3 += 1
+                fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {2} \t -Locx 0.0  \t"
+                                  " -Locy {1}\n".format(j3, div3, j7))
+                j3 += 1
+                fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {2} \t -Locx 0.0  \t"
+                                  " -Locy {1}\n".format(j3, div2, j7))
+                j3 += 1
+                fileOS.writelines("HTNodeSet \t {0} \t -HTEntity {2} \t -Locx 0.0  \t "
+                                  "-Locy {1}\n".format(j3, entityDepth/2, j7))
+                j3 += 1
+                fileOS.writelines("HTNodeSet \t {0} \t -NodeSet {1} {2} {3} {4} {5} {6} {7} {8} "
+                                  "{9}\n".format(j3, j3-9, j3-8, j3-7, j6-6, j3-5, j3-4, j3-3, j3-2, j3-1))
 
             if selectEntity.get() == "Block":
                 if deptLocation.get() == "5":
@@ -1080,6 +1096,7 @@ tk.Label(elementFrame, width=15, text="Shell Element File", anchor='e').grid(row
 def nodesDict():  # creating dictionaries of nodes and nodes files
     global nodesFile
     createFolder('./ElementFiles')
+    createFolder('./SingleLine')
     NODES_OUTPUT = 'ElementFiles/Nodes.csv'  # writing to make an CSV file
     NODES_OUTPUT2 = 'ElementFiles/Nodes2.csv'  # writing new files by Removing blank lines
     with open(nodesFile) as f1:
@@ -1122,11 +1139,12 @@ tk.Label(elementFrame, width=15, text="Generate Nodes File", anchor='e').grid(ro
 def bcElementDict():
     global beamEleFile
     createFolder('./ElementFiles')
+    createFolder('./SingleLine')
     ELEMENT_OUTPUT = 'ElementFiles/Element.csv'
     ELEMENT_OUTPUT2 = 'ElementFiles/Element2.csv'
     with open(beamEleFile) as elementFile:
         strippedEle = (ele.strip() for ele in elementFile)
-        elements = (ele.replace(" ", ",").split() for ele in strippedEle if
+        elements = (ele.replace("\t", ",").split() for ele in strippedEle if
                     ele)  # be noted that elimination is "tab" here
         csv.reader(elementFile, delimiter=',')
         with open(ELEMENT_OUTPUT, 'w', newline='') as outFile:
@@ -1167,6 +1185,7 @@ def shellElementDict():
     # noinspection PyGlobalUndefined
     global shellEleFile
     createFolder('./ElementFiles')
+    createFolder('./SingleLine')
     SHELL_ELEMENT_OUTPUT = 'ElementFiles/Element3.csv'
     SHELL_ELEMENT_OUTPUT2 = 'ElementFiles/Element4.csv'
     with open(shellEleFile) as elementFile:
@@ -1318,7 +1337,11 @@ def outputData():
                     initialX_Truss += incrementX_Truss
 
         if structureType.get() == "Slabs":
+
             if incrementDirectionSLB.get() == "X":
+                with open(fds_AST, 'a') as f1:
+                    f1.writelines("\n&OBST ID='Slab{0}', XB={1},{2},{3},{4},{5},{6}, /".format(j, float(xInt_slab.get()), float(xLen_slab.get()),
+                                                                                       float(y_slab.get()), float(widthY_slab.get()), float(z_slab.get()), float(z_slab.get()) + 0.12))
                 initialY_Slab = float(y_slab.get())
                 incrementY_Slab = float(incY_slab.get())
                 slabYWidth = float(widthY_slab.get())
@@ -1625,7 +1648,14 @@ def outputData():
                     EleSet2.write('\n eleLoad -ele {0} -type -beamThermal -source "temp{1}.dat" {2}'
                                   .format(f, counter, sectionBC.get()))
 
-        def ele_set_genShellThermal(counter, member):
+        def ele_set_genBeamThermalSL(counter, member):
+            with open(ELEMENT_SET2, 'a', newline='') as EleSet2:
+                EleSet2.write("\n\n#This is ElementSet{0} for {1}\n".format(counter, member))
+                f = str(elementListBC).replace(',', ' ')[1:-1]  # it removes the square brackets
+                EleSet2.write('\n eleLoad -ele {0} -type -beamThermal -source "temp{1}.dat" {2}'
+                              .format(f, counter, sectionBC.get()))
+
+        def ele_set_genShellThermal(counter, member):  # one line for each element
             with open(ELEMENT_SET2, 'a', newline='') as EleSet2:
                 EleSet2.write("\n\n#This is ElementSet{0} for {1}".format(counter, member))
                 for iItem in range(0, len(elementListShell), 1):  # step by threes.
@@ -1633,31 +1663,38 @@ def outputData():
                     EleSet2.write('\n eleLoad -ele {0} -type -shellThermal -source "temp{1}.dat" {2}'
                                   .format(f, counter, sectionShell.get()))
 
+        def ele_set_genShellThermalSL(counter, member):   # data in single line
+            with open(ELEMENT_SET2, 'a', newline='') as EleSet2:
+                EleSet2.write("\n\n#This is ElementSet{0} for {1}".format(counter, member))
+                f = str(elementListShell)[1:-1]  # it removes the square brackets
+                EleSet2.write('\n eleLoad -ele {0} -type -shellThermal -source "temp{1}.dat" {2}'
+                                  .format(f, counter, sectionShell.get()))
+
         def ele_set_genCol(counter):
             with open(ELEMENT_SET_COL, 'a', newline='') as EleSet:
                 EleSet.write("\n#This is ElementSet{0} for Columns\n".format(counter))
                 writer = csv.writer(EleSet)
-                for iItem in range(0, len(elementListBC), 1):  # step by threes.
+                for iItem in range(0, len(elementListBC), 1):
                     writer.writerow(elementListBC[iItem:iItem+1])
 
         def ele_set_genBeam(counter):
             with open(ELEMENT_SET_BEAM, 'a', newline='') as EleSet:
                 EleSet.write("\n#This is ElementSet{0} for Beam\n".format(counter))
                 writer = csv.writer(EleSet)
-                for iItem in range(0, len(elementListBC), 1):  # step by threes.
+                for iItem in range(0, len(elementListBC), 1):
                     writer.writerow(elementListBC[iItem:iItem+1])
 
         def ele_set_genTruss(counter):
             with open(ELEMENT_SET_Truss, 'a', newline='') as EleSet:
                 EleSet.write("\n#This is ElementSet{0} for Truss\n".format(counter))
                 writer = csv.writer(EleSet)
-                for iItem in range(0, len(elementListBC), 1):  # step by threes.
+                for iItem in range(0, len(elementListBC), 1):
                     writer.writerow(elementListBC[iItem:iItem+1])
 
         def ele_set_genBTCol(counter):
             with open(onlyColEle, 'a', newline='') as EleSet2:
                 EleSet2.write("\n\n#This is ElementSet{0} for Columns\n".format(counter))
-                for iItem in range(0, len(elementListBC), 1):  # step by threes.
+                for iItem in range(0, len(elementListBC), 1):  # step of one.
                     f = str(elementListBC[iItem:iItem + 1])[1:-1]  # it removes the square brackets
                     EleSet2.write('\n eleLoad -ele {0} -type -beamThermal -source "temp{1}.dat" {2}'
                                   .format(f, counter, sectionBC.get()))
@@ -1686,6 +1723,34 @@ def outputData():
                     EleSet2.write('\n eleLoad -ele {0} -type -shellThermal -source "temp{1}.dat" {2}'
                                   .format(f, counter, sectionShell.get()))
 
+        def ele_set_genBTColSL(counter):
+            with open(onlyColEle_SL, 'a', newline='') as EleSet2:
+                EleSet2.write("\n\n#This is ElementSet{0} for Columns\n".format(counter))
+                f = str(elementListBC).replace(',', ' ')[1:-1]  # it removes the square brackets
+                EleSet2.write('\n eleLoad -ele {0} -type -beamThermal -source "temp{1}.dat" {2}'
+                                  .format(f, counter, sectionBC.get()))
+
+        def ele_set_genBTTrussSL(counter):
+            with open(onlyTrussEle_SL, 'a', newline='') as EleSet2:
+                EleSet2.write("\n\n#This is ElementSet{0} for Truss\n".format(counter))
+                f = str(elementListBC).replace(',', ' ')[1:-1]  # it removes the square brackets
+                EleSet2.write('\n eleLoad -ele {0} -type -beamThermal -source "temp{1}.dat" {2}'
+                                  .format(f, counter, sectionBC.get()))
+
+        def ele_set_genBTBeamSL(counter):
+            with open(onlyBeamEle_SL, 'a', newline='') as EleSet2:
+                EleSet2.write("\n\n#This is ElementSet{0} for Beam\n".format(counter))
+                f = str(elementListBC).replace(',', ' ')[1:-1]  # it removes the square brackets
+                EleSet2.write('\n eleLoad -ele {0} -type -beamThermal -source "temp{1}.dat" {2}'
+                                  .format(f, counter, sectionBC.get()))
+
+        def ele_set_genSTSlabSL(counter):
+            with open(onlySlabEle_SL, 'a', newline='') as EleSet2:
+                EleSet2.write("\n\n#This is ElementSet{0} for Slab".format(counter))
+                f = str(elementListShell).replace(',', ' ')[1:-1]  # it removes the square brackets
+                EleSet2.write('\n eleLoad -ele {0} -type -shellThermal -source "temp{1}.dat" {2}'
+                                  .format(f, counter, sectionShell.get()))
+
         if structureType.get() == "Columns":  # ----------For Columns
             global columnBegin, lowerValColumn, upperValColumn
             columnBegin = float(z_Column.get())
@@ -1694,8 +1759,10 @@ def outputData():
                 upperValColumn = columnBegin + float(inc_Column.get())
                 eleDictionaryBC(nodes1())
                 ele_set_genBeamThermal(iEle, "Columns")
+                ele_set_genBeamThermalSL(iEle, "Columns")
                 ele_set_genBTCol(iEle)
                 ele_set_genCol(iEle)
+                ele_set_genBTColSL(iEle)
                 columnBegin += float(inc_Column.get())
                 iEle += 1
 
@@ -1708,8 +1775,10 @@ def outputData():
                     while beginXBeam < float(x_LenBeam.get()):
                         eleDictionaryBC(nodes4())
                         ele_set_genBeamThermal(iEle, "Beam")
+                        ele_set_genBeamThermalSL(iEle, "Beam")
+                        ele_set_genBTBeam(iEle)
                         ele_set_genBeam(iEle)
-                        ele_set_genBeam(iEle)
+                        ele_set_genBTBeamSL(iEle)
                         beginXBeam += float(incX_Beam.get())
                         jEle += 1
                         iEle += 1
@@ -1722,8 +1791,10 @@ def outputData():
                     while beginYBeam < float(y_LenBeam.get()):
                         eleDictionaryBC(nodes4())
                         ele_set_genBeamThermal(iEle, "Beam")
+                        ele_set_genBeamThermalSL(iEle, "Beam")
                         ele_set_genBTBeam(iEle)
                         ele_set_genBeam(iEle)
+                        ele_set_genBTBeamSL(iEle)
                         beginYBeam += float(incY_Beam.get())
                         jEle += 1
                         iEle += 1
@@ -1738,8 +1809,10 @@ def outputData():
                     while beginXTruss < float(X_lenTruss.get()):
                         eleDictionaryBC(nodes8())
                         ele_set_genBeamThermal(iEle, "Truss")
+                        ele_set_genBeamThermalSL(iEle, "Truss")
                         ele_set_genBTTruss(iEle)
                         ele_set_genTruss(iEle)
+                        ele_set_genBTTrussSL(iEle)
                         beginXTruss += float(incXTruss.get())
                         jEle += 1
                         iEle += 1
@@ -1752,8 +1825,10 @@ def outputData():
                     while beginYTruss < float(Y_lenTruss.get()):
                         eleDictionaryBC(nodes8())
                         ele_set_genBeamThermal(iEle, "Truss")
+                        ele_set_genBeamThermalSL(iEle, "Truss")
                         ele_set_genBTTruss(iEle)
                         ele_set_genTruss(iEle)
+                        ele_set_genBTTrussSL(iEle)
                         beginYTruss += float(incYTruss.get())
                         jEle += 1
                         iEle += 1
@@ -1768,7 +1843,9 @@ def outputData():
                     while beginXslab < float(xLen_slab.get()):
                         eleDictionaryShell(nodes7())
                         ele_set_genShellThermal(iEle, "Slabs")
+                        ele_set_genShellThermalSL(iEle, "Slabs")
                         ele_set_genSTSlab(iEle)
+                        ele_set_genSTSlabSL(iEle)
                         beginXslab += float(incX_slab.get())
                         jEle += 1
                         iEle += 1
@@ -1781,6 +1858,9 @@ def outputData():
                     while beginYSlab < float(widthY_slab.get()):
                         eleDictionaryShell(nodes7())
                         ele_set_genShellThermal(iEle, "Slabs")
+                        ele_set_genShellThermalSL(iEle, "Slabs")
+                        ele_set_genSTSlab(iEle)
+                        ele_set_genSTSlabSL(iEle)
                         beginYSlab += float(incY_slab.get())
                         jEle += 1
                         iEle += 1
@@ -1865,7 +1945,6 @@ def elementLoad():
             with open(fname) as infile:
                 for line in infile:
                     finalFile.write(line)
-
 
 
 tk.Button(window2, text="Update Ele. Load", command=elementLoad, width=15, height=1).grid(row=8, column=0, padx=5, pady=5)
