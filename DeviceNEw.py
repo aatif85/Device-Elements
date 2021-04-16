@@ -21,7 +21,7 @@ import re
 # class for Scroller
 class VerticalScrolledFrame:
 
-    def __init__(self, master, **kwargs):
+    def __init__(self, master, **kwargs: object):
         width = kwargs.pop('width', None)
         height = kwargs.pop('height', None)
         bg = kwargs.pop('bg', kwargs.pop('background', None))
@@ -337,9 +337,9 @@ beamFrame = tk.LabelFrame(window2, text="Beam Inputs", padx=5, pady=5)
 beamFrame.grid(row=2, column=0, sticky="nsew")
 
 directionLengthBEAM = ["X", "Y"]
-incrementDirectionBEAM = tk.StringVar()  # it was clickedEnt
-incrementDirectionBEAM.set(directionLengthBEAM[0])  # use variables as list
-incrementBeamDrop = tk.OptionMenu(beamFrame, incrementDirectionBEAM, *directionLengthBEAM)
+fixedDirection = tk.StringVar()  # it was clickedEnt
+fixedDirection.set(directionLengthBEAM[0])  # use variables as list
+incrementBeamDrop = tk.OptionMenu(beamFrame, fixedDirection, *directionLengthBEAM)
 incrementBeamDrop.config(width=5)
 incrementBeamDrop.grid(row=0, column=1, padx=5, pady=5)
 tk.Label(beamFrame, width=15, text="Initial Inc. Dir.", anchor='e').grid(row=0, column=0)
@@ -390,9 +390,9 @@ frameTruss = tk.LabelFrame(window2, text="Truss Inputs", padx=5, pady=5)
 frameTruss.grid(row=3, column=0, sticky="nsew")
 
 directionLengthTRUSS = ["X", "Y"]
-incrementDirectionTRUSS = tk.StringVar()  # it was clickedEnt
-incrementDirectionTRUSS.set(directionLengthTRUSS[0])  # use variables as list
-incrementDrop = tk.OptionMenu(frameTruss, incrementDirectionTRUSS, *directionLengthTRUSS)
+fixedDirectionTruss = tk.StringVar()  # it was clickedEnt
+fixedDirectionTruss.set(directionLengthTRUSS[0])  # use variables as list
+incrementDrop = tk.OptionMenu(frameTruss, fixedDirectionTruss, *directionLengthTRUSS)
 incrementDrop.config(width=5)
 incrementDrop.grid(row=0, column=1, padx=5, pady=5)
 tk.Label(frameTruss, width=15, text="Initial Inc. Dir.", anchor='e').grid(row=0, column=0)
@@ -605,17 +605,22 @@ entTruss = 1  # counter for entity of  truss
 entSlab = 1  # counter for entity of  slab
 iEle = 1  # counter for the BC elements
 jEle = 1  # counter for shell elements, so used for slabs in OpenSEES
+obstCol = 1  # counter for column obstruction
+obstBeam = 1  # counter for beam obstruction
+obstTruss = 1  # counter for truss obstruction
+obstSlab = 1  # counter for slab obstruction
 
 '''These functions are to make the devices for FDS script file'''
 
 
 def fdsFileMaker(begin, final, increment, Cord1, Cord2, IOR):
     createFolder('./ElementFiles')
-    global j
+    global j, obstCol
     if structureType.get() == "Columns":
         with open(fds_AST, 'a') as f1:
-            f1.writelines("\n&OBST ID='Column{0}', XB={1},{2},{3},{4},{5},{6}, /".format(j, Cord1 - 0.5, Cord1 + 0.5,
-                                Cord2, Cord2 + 0.5, begin, final))
+            f1.writelines("\n&OBST ID='Column{0}', XB={1},{2},{3},{4},{5},{6}, /".format(obstCol, Cord1 - 0.2, Cord1 + 0.2,
+                                Cord2, Cord2 + 0.2, begin, final))
+        obstCol += 1
         while begin < final:
             if units.get() == "m":
                 devcLocCol = begin + float(inc_Column.get()) / 2
@@ -702,33 +707,9 @@ def fdsFileMaker(begin, final, increment, Cord1, Cord2, IOR):
             begin += increment
 
     if structureType.get() == "Truss":
+
         while begin < final:
-            if incrementDirectionTRUSS.get() == "X":
-                if units.get() == "m":
-                    devcLocTruss = begin + float(incXTruss.get()) / 2
-                    with open(fds_AST, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3}, "
-                                      "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
-                    with open(fds_HF, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3}, "
-                                      "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
-                    with open(fds_HTC, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3}, "
-                                      "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
-
-                if units.get() == "mm":
-                    devcLocTruss = begin/1000 + float(incXTruss.get()) / 2000
-                    with open(fds_AST, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3}, "
-                                      "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
-                    with open(fds_HF, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3}, "
-                                      "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
-                    with open(fds_HTC, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3}, "
-                                      "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
-
-            if incrementDirectionTRUSS.get() == "Y":
+            if fixedDirectionTruss.get() == "X":
                 if units.get() == "m":
                     devcLocTrussY = begin + float(incYTruss.get()) / 2
                     with open(fds_AST, 'a') as f1:
@@ -753,37 +734,36 @@ def fdsFileMaker(begin, final, increment, Cord1, Cord2, IOR):
                         f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, Cord1, devcLocTrussY, Cord2, IOR))
 
+            if fixedDirectionTruss.get() == "Y":
+                if units.get() == "m":
+                    devcLocTruss = begin + float(incXTruss.get()) / 2
+                    with open(fds_AST, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
+                    with open(fds_HF, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
+                    with open(fds_HTC, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
+
+                if units.get() == "mm":
+                    devcLocTruss = begin/1000 + float(incXTruss.get()) / 2000
+                    with open(fds_AST, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
+                    with open(fds_HF, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
+                    with open(fds_HTC, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3}, "
+                                      "IOR={4}/".format(j, devcLocTruss, Cord1, Cord2, IOR))
             j += 1
             begin += increment
 
     if structureType.get() == "Beam":
         while begin < final:
-            if incrementDirectionBEAM.get() == "X":
-                if units.get() == "m":
-                    devcLocBeamX = begin + float(incX_Beam.get()) / 2
-                    with open(fds_AST, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3},"
-                                      "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
-                    with open(fds_HF, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3},"
-                                      "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
-                    with open(fds_HTC, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3},"
-                                      "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
-
-                if units.get() == "mm":
-                    devcLocBeamX = begin/1000 + float(incX_Beam.get()) / 2000
-                    with open(fds_AST, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3},"
-                                      "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
-                    with open(fds_HF, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3},"
-                                      "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
-                    with open(fds_HTC, 'a') as f1:
-                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3},"
-                                      "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
-
-            if incrementDirectionBEAM.get() == "Y":
+            if fixedDirection.get() == "X":
                 if units.get() == "m":
                     devcLocBeamY = begin + float(incY_Beam.get()) / 2
                     with open(fds_AST, 'a') as f1:
@@ -808,9 +788,33 @@ def fdsFileMaker(begin, final, increment, Cord1, Cord2, IOR):
                         f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3}, "
                                       "IOR={4}/".format(j, Cord1, devcLocBeamY, Cord2, IOR))
 
+            if fixedDirection.get() == "Y":
+                if units.get() == "m":
+                    devcLocBeamX = begin + float(incX_Beam.get()) / 2
+                    with open(fds_AST, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3},"
+                                      "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
+                    with open(fds_HF, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3},"
+                                      "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
+                    with open(fds_HTC, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3},"
+                                      "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
+
+                if units.get() == "mm":
+                    devcLocBeamX = begin/1000 + float(incX_Beam.get()) / 2000
+                    with open(fds_AST, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'AST{0}', QUANTITY='ADIABATIC SURFACE TEMPERATURE', XYZ={1},{2},{3},"
+                                      "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
+                    with open(fds_HF, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HF{0}', QUANTITY='GAUGE HEAT FLUX', XYZ={1},{2},{3},"
+                                      "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
+                    with open(fds_HTC, 'a') as f1:
+                        f1.writelines("\n&DEVC ID = 'HTC{0}', QUANTITY='HEAT TRANSFER COEFFICIENT', XYZ={1},{2},{3},"
+                                      "IOR={4}/".format(j, devcLocBeamX, Cord1, Cord2, IOR))
+
             j += 1
             begin += increment
-
 
 ##############################---Functions for entities
 
@@ -1242,6 +1246,7 @@ def nodesB2():  # this method is when member is in Y direction and Z is fixed an
                      and Z == float(z_Beam.get()))]
     return matchingNodes
 
+
 def nodesT1():  # this method is when member is in Y direction and  X is fixed
     matchingNodes = [key for key, (X, Y, Z) in nodesDictionary.items()
                      if (X == float(xTruss.get())) and beginYTruss <= Y <= beginYTruss + float(incYTruss.get())
@@ -1285,6 +1290,7 @@ def outputData():
     #global location
     global iEle
     global jEle
+    global obstBeam, obstTruss, obstSlab
     '''This part of the code makes devices for FDS using the above functions "fdsFileMaker"'''
     if fdsDevices.get() == "Yes":
         if structureType.get() == "Columns":
@@ -1297,78 +1303,76 @@ def outputData():
                 fdsFileMaker(i, m, var, float(x_Column.get())/1000, float(y_Column.get())/1000, iorColumn.get())
 
         if structureType.get() == "Beam":
-            if incrementDirectionBEAM.get() == "X":
+            if fixedDirection.get() == "X":
+                with open(fds_AST, 'a') as f1:
+                    f1.writelines("\n&OBST ID='Beam{0}', XB={1},{2},{3},{4},{5},{6}, /".format(obstBeam, float(x_Beam.get()) - 0.2, float(x_Beam.get()) + 0.2,
+                            float(y_Beam.get()), float(y_LenBeam.get()), float(z_Beam.get()), float(z_Beam.get()) + 0.4))
+                obstBeam += 1
                 initialY_Beam = float(y_Beam.get())
                 incrementY_Beam = float(incY_Beam.get())
                 BeamLengthY = float(y_LenBeam.get())
-                while initialY_Beam < BeamLengthY:
-                    initialX_Beam = float(x_Beam.get())
-                    BeamLengthX = float(x_LenBeam.get())
-                    incrementX_Beam = float(incX_Beam.get())
-                    if units.get() == "m":
-                        fdsFileMaker(initialX_Beam, BeamLengthX, incrementX_Beam, initialY_Beam,
-                                     float(z_Beam.get()), ior_Beam.get())
-                    if units.get() == "mm":
-                        fdsFileMaker(initialX_Beam, BeamLengthX, incrementX_Beam, initialY_Beam/1000,
-                                     float(z_Beam.get())/1000, ior_Beam.get())
-
+                if units.get() == "m":
+                    fdsFileMaker(initialY_Beam, BeamLengthY, incrementY_Beam, float(x_Beam.get()),
+                         float(z_Beam.get()), ior_Beam.get())
+                if units.get() == "mm":
+                    fdsFileMaker(initialY_Beam, BeamLengthY, incrementY_Beam, float(x_Beam.get())/1000,
+                             float(z_Beam.get())/1000, ior_Beam.get())
                     initialY_Beam += incrementY_Beam
 
-            if incrementDirectionBEAM.get() == "Y":
+            if fixedDirection.get() == "Y":
+                with open(fds_AST, 'a') as f1:
+                    f1.writelines("\n&OBST ID='Beam{0}', XB={1},{2},{3},{4},{5},{6}, /".format(obstBeam, float(x_Beam.get()), float(X_lenTruss.get()),
+                        float(y_Beam.get()) - 0.2, float(y_Beam.get()) + 0.2, float(z_Beam.get()), float(z_Beam.get()) + 0.4))
+                obstBeam += 1
                 initialX_Beam = float(x_Beam.get())
                 BeamLengthX = float(X_lenTruss.get())
                 incrementX_Beam = float(incX_Beam.get())
-                while initialX_Beam < BeamLengthX:
-                    initialY_Beam = float(y_Beam.get())
-                    incrementY_Beam = float(incY_Beam.get())
-                    BeamLengthY = float(y_LenBeam.get())
-                    if units.get() == "m":
-                        fdsFileMaker(initialY_Beam, BeamLengthY, incrementY_Beam, initialX_Beam,
-                                     float(z_Beam.get()), ior_Beam.get())
-                    if units.get() == "mm":
-                        fdsFileMaker(initialY_Beam, BeamLengthY, incrementY_Beam, initialX_Beam/1000,
-                                     float(z_Beam.get())/1000, ior_Beam.get())
-                    initialX_Beam += incrementX_Beam
+                if units.get() == "m":
+                    fdsFileMaker(initialX_Beam, BeamLengthX, incrementX_Beam, float(y_Beam.get()),
+                            float(z_Beam.get()), ior_Beam.get())
+                if units.get() == "mm":
+                    fdsFileMaker(initialX_Beam, BeamLengthX, incrementX_Beam, float(y_Beam.get())/1000,
+                            float(z_Beam.get())/1000, ior_Beam.get())
 
         if structureType.get() == "Truss":
-            if incrementDirectionTRUSS.get() == "X":
+            if fixedDirectionTruss.get() == "X":
+                with open(fds_AST, 'a') as f1:
+                    f1.writelines("\n&OBST ID='Truss{0}', XB={1},{2},{3},{4},{5},{6}, /".format(obstTruss, float(xTruss.get()) - 0.2, float(xTruss.get()) + 0.2,
+                                    float(yTruss.get()), float(Y_lenTruss.get()), float(lLimitTruss.get()), float(uLimitTruss.get())))
+                obstTruss += 1
                 initialY_Truss = float(yTruss.get())
                 incrementY_Truss = float(incYTruss.get())
                 TrussWidth = float(Y_lenTruss.get())
-                while initialY_Truss < TrussWidth:
-                    initialX_Truss = float(xTruss.get())
-                    TrussLength = float(X_lenTruss.get())
-                    incrementX_Truss = float(incXTruss.get())
-                    if units.get() == "m":
-                        fdsFileMaker(initialX_Truss, TrussLength, incrementX_Truss, initialY_Truss,
-                                     float(lLimitTruss.get()), iorTruss.get())
-                    if units.get() == "mm":
-                        fdsFileMaker(initialX_Truss, TrussLength, incrementX_Truss, initialY_Truss/1000,
-                                     float(lLimitTruss.get())/1000, iorTruss.get())
-                    initialY_Truss += incrementY_Truss
+                if units.get() == "m":
+                    fdsFileMaker(initialY_Truss, TrussWidth, incrementY_Truss,
+                                 float(xTruss.get()), float(lLimitTruss.get()), iorTruss.get())
+                if units.get() == "mm":
+                    fdsFileMaker(initialY_Truss, TrussWidth, incrementY_Truss,
+                                 float(xTruss.get())/1000, float(lLimitTruss.get())/1000, iorTruss.get())
+                initialY_Truss += incrementY_Truss
 
-            if incrementDirectionTRUSS.get() == "Y":
+            if fixedDirectionTruss.get() == "Y":
+                with open(fds_AST, 'a') as f1:
+                    f1.writelines("\n&OBST ID='Truss{0}', XB={1},{2},{3},{4},{5},{6}, /".format(obstTruss, float(xTruss.get()), float(X_lenTruss.get()),
+                            float(yTruss.get()) - 0.2, float(yTruss.get()) + 0.2, float(lLimitTruss.get()), float(uLimitTruss.get())))
+                obstTruss += 1
                 initialX_Truss = float(xTruss.get())
                 TrussLength = float(X_lenTruss.get())
                 incrementX_Truss = float(incXTruss.get())
-                while initialX_Truss < TrussLength:
-                    initialY_Truss = float(yTruss.get())
-                    incrementY_Truss = float(incYTruss.get())
-                    TrussWidth = float(Y_lenTruss.get())
-                    if units.get() == "m":
-                        fdsFileMaker(initialY_Truss, TrussWidth, incrementY_Truss,
-                                     initialX_Truss, float(lLimitTruss.get()), iorTruss.get())
-                    if units.get() == "mm":
-                        fdsFileMaker(initialY_Truss, TrussWidth, incrementY_Truss,
-                                     initialX_Truss/1000, float(lLimitTruss.get())/1000, iorTruss.get())
+                if units.get() == "m":
+                    fdsFileMaker(initialX_Truss, TrussLength, incrementX_Truss, float(yTruss.get()),
+                                 float(lLimitTruss.get()), iorTruss.get())
+                if units.get() == "mm":
+                    fdsFileMaker(initialX_Truss, TrussLength, incrementX_Truss, float(yTruss.get())/1000,
+                                 float(lLimitTruss.get())/1000, iorTruss.get())
                     initialX_Truss += incrementX_Truss
 
         if structureType.get() == "Slabs":
-
+            with open(fds_AST, 'a') as f1:
+                f1.writelines("\n&OBST ID='Slab{0}', XB={1},{2},{3},{4},{5},{6}, /".format(obstSlab, float(xInt_slab.get()), float(xLen_slab.get()),
+                                    float(y_slab.get()), float(widthY_slab.get()), float(z_slab.get()), float(z_slab.get()) + 0.12))
+            obstSlab += 1
             if incrementDirectionSLB.get() == "X":
-                with open(fds_AST, 'a') as f1:
-                    f1.writelines("\n&OBST ID='Slab{0}', XB={1},{2},{3},{4},{5},{6}, /".format(j, float(xInt_slab.get()), float(xLen_slab.get()),
-                                                                                       float(y_slab.get()), float(widthY_slab.get()), float(z_slab.get()), float(z_slab.get()) + 0.12))
                 initialY_Slab = float(y_slab.get())
                 incrementY_Slab = float(incY_slab.get())
                 slabYWidth = float(widthY_slab.get())
@@ -1437,159 +1441,143 @@ def outputData():
 
     if structureType.get() == "Beam":
         global entBeam
-        if incrementDirectionBEAM.get() == "X":
+        if fixedDirection.get() == "X":
             beginY_BEAM = float(y_Beam.get())
             incrementY_BEAM = float(incY_Beam.get())
             widthBEAM = float(y_LenBeam.get())
-            while beginY_BEAM < widthBEAM:
-                beginX_BEAM = float(x_Beam.get())
-                lengthBEAM = float(x_LenBeam.get())
-                incrementXBeam = float(incX_Beam.get())
-                with open(osFile, 'a') as f3:
-                    f3.writelines("\n#This is Beam {0}\n\n".format(entBeam))
-                if selectEntity.get() == "Isection":
-                    iEntity(beginX_BEAM, lengthBEAM, incrementXBeam, float(cX_iSec.get()), float(cY_iSec.get()),
-                            float(flangeWidth.get()), float(beamHeight.get()), float(webThickness.get()),
-                            float(flangeThickness.get()))
-                    mesh(beginX_BEAM, lengthBEAM, incrementXBeam, int(pChange.get()), float(meshFlangeWidth.get()),
+            with open(osFile, 'a') as f3:
+                f3.writelines("\n#This is Beam {0}\n\n".format(entBeam))
+            if selectEntity.get() == "Isection":
+                iEntity(beginY_BEAM, widthBEAM, incrementY_BEAM, float(cX_iSec.get()), float(cY_iSec.get()),
+                        float(flangeWidth.get()), float(beamHeight.get()), float(webThickness.get()),
+                        float(flangeThickness.get()))
+                mesh(beginY_BEAM, widthBEAM, incrementY_BEAM, int(pChange.get()), float(meshFlangeWidth.get()),
                          float(meshFlangeThickness.get()), float(meshWebThickness.get()), float(meshWebHeight.get()),
                          int(modelMatTag.get()))
 
+            if selectEntity.get() == "Block":
+                blockEntity(beginY_BEAM, widthBEAM, incrementY_BEAM, float(cX_Block.get()), float(cY_Block.get()),
+                            float(widthBlock.get()), float(depthBlock.get()))
+                meshBLK(beginY_BEAM, widthBEAM, incrementY_BEAM, modelMatTag.get(), pChange.get(),
+                        float(meshWidBlock.get()), float(meshDepthBlock.get()))
+
+            if selectNodeSet.get() == "Faces":
+                nodeSETFaces(beginY_BEAM, widthBEAM, incrementY_BEAM, Nodeset.get())
+            if selectNodeSet.get() == "User Defined":
+                if selectEntity.get() == "Isection":
+                    nodeSETLoc(beginY_BEAM, widthBEAM, incrementY_BEAM, float(beamHeight.get()))
                 if selectEntity.get() == "Block":
-                    blockEntity(beginX_BEAM, lengthBEAM, incrementXBeam, float(cX_Block.get()), float(cY_Block.get()),
-                                float(widthBlock.get()), float(depthBlock.get()))
-                    meshBLK(beginX_BEAM, lengthBEAM, incrementXBeam, modelMatTag.get(), pChange.get(),
-                            float(meshWidBlock.get()), float(meshDepthBlock.get()))
+                    nodeSETLoc(beginY_BEAM, widthBEAM, incrementY_BEAM, float(depthBlock.get()))
 
-                if selectNodeSet.get() == "Faces":
-                    nodeSETFaces(beginX_BEAM, lengthBEAM, incrementXBeam, Nodeset.get())
-                if selectNodeSet.get() == "User Defined":
-                    if selectEntity.get() == "Isection":
-                        nodeSETLoc(beginX_BEAM, lengthBEAM, incrementXBeam, float(beamHeight.get()))
-                    if selectEntity.get() == "Block":
-                        nodeSETLoc(beginX_BEAM, lengthBEAM, incrementXBeam, float(depthBlock.get()))
+            fireModel(beginY_BEAM, widthBEAM, incrementY_BEAM, fireModelType.get())
+            heatFlux(beginY_BEAM, widthBEAM, incrementY_BEAM, hfFaces.get(), modelHT_Tag.get())
+            htRecorder(beginY_BEAM, widthBEAM, incrementY_BEAM)
+            entBeam += 1
+            beginY_BEAM += incrementY_BEAM
 
-                fireModel(beginX_BEAM, lengthBEAM, incrementXBeam, fireModelType.get())
-                heatFlux(beginX_BEAM, lengthBEAM, incrementXBeam, hfFaces.get(), modelHT_Tag.get())
-                htRecorder(beginX_BEAM, lengthBEAM, incrementXBeam)
-                entBeam += 1
-                beginY_BEAM += incrementY_BEAM
-
-        if incrementDirectionBEAM.get() == "Y":
+        if fixedDirection.get() == "Y":
             beginX_BEAM = float(x_Beam.get())
             lengthBEAM = float(x_LenBeam.get())
             incrementXBeam = float(incX_Beam.get())
-            while beginX_BEAM < lengthBEAM:
-                beginY_BEAM = float(y_Beam.get())
-                incrementY_BEAM = float(incY_Beam.get())
-                widthBEAM = float(y_LenBeam.get())
-                with open(osFile, 'a') as f3:
-                    f3.writelines("\n#This is Beam {0}\n\n".format(entBeam))
+            with open(osFile, 'a') as f3:
+                f3.writelines("\n#This is Beam {0}\n\n".format(entBeam))
+            if selectEntity.get() == "Isection":
+                iEntity(beginX_BEAM, lengthBEAM, incrementXBeam, float(cX_iSec.get()), float(cY_iSec.get()),
+                        float(flangeWidth.get()), float(beamHeight.get()), float(webThickness.get()),
+                        float(flangeThickness.get()))
+                mesh(beginX_BEAM, lengthBEAM, incrementXBeam, int(pChange.get()), float(meshFlangeWidth.get()),
+                        float(meshFlangeThickness.get()), float(meshWebThickness.get()), float(meshWebHeight.get()),
+                        int(modelMatTag.get()))
+
+            if selectEntity.get() == "Block":
+                blockEntity(beginX_BEAM, lengthBEAM, incrementXBeam, float(cX_Block.get()), float(cY_Block.get()),
+                            float(widthBlock.get()), float(depthBlock.get()))
+                meshBLK(beginX_BEAM, lengthBEAM, incrementXBeam, modelMatTag.get(), pChange.get(),
+                        float(meshWidBlock.get()), float(meshDepthBlock.get()))
+
+            if selectNodeSet.get() == "Faces":
+                nodeSETFaces(beginX_BEAM, lengthBEAM, incrementXBeam, Nodeset.get())
+            if selectNodeSet.get() == "User Defined":
                 if selectEntity.get() == "Isection":
-                    iEntity(beginY_BEAM, widthBEAM, incrementY_BEAM, float(cX_iSec.get()), float(cY_iSec.get()),
-                            float(flangeWidth.get()), float(beamHeight.get()), float(webThickness.get()),
-                            float(flangeThickness.get()))
-                    mesh(beginY_BEAM, widthBEAM, incrementY_BEAM, int(pChange.get()), float(meshFlangeWidth.get()),
-                         float(meshFlangeThickness.get()), float(meshWebThickness.get()), float(meshWebHeight.get()),
-                         int(modelMatTag.get()))
-
+                    nodeSETLoc(beginX_BEAM, lengthBEAM, incrementXBeam, float(beamHeight.get()))
                 if selectEntity.get() == "Block":
-                    blockEntity(beginY_BEAM, widthBEAM, incrementY_BEAM, float(cX_Block.get()), float(cY_Block.get()),
-                                float(widthBlock.get()), float(depthBlock.get()))
-                    meshBLK(beginY_BEAM, widthBEAM, incrementY_BEAM, modelMatTag.get(), pChange.get(),
-                            float(meshWidBlock.get()), float(meshDepthBlock.get()))
+                    nodeSETLoc(beginX_BEAM, lengthBEAM, incrementXBeam, float(depthBlock.get()))
 
-                if selectNodeSet.get() == "Faces":
-                    nodeSETFaces(beginY_BEAM, widthBEAM, incrementY_BEAM, Nodeset.get())
-                if selectNodeSet.get() == "User Defined":
-                    if selectEntity.get() == "Isection":
-                        nodeSETLoc(beginY_BEAM, widthBEAM, incrementY_BEAM, float(beamHeight.get()))
-                    if selectEntity.get() == "Block":
-                        nodeSETLoc(beginY_BEAM, widthBEAM, incrementY_BEAM, float(depthBlock.get()))
-
-                fireModel(beginY_BEAM, widthBEAM, incrementY_BEAM, fireModelType.get())
-                heatFlux(beginY_BEAM, widthBEAM, incrementY_BEAM, hfFaces.get(), modelHT_Tag.get())
-                htRecorder(beginY_BEAM, widthBEAM, incrementY_BEAM)
-                entBeam += 1
-                beginX_BEAM += incrementXBeam
+            fireModel(beginX_BEAM, lengthBEAM, incrementXBeam, fireModelType.get())
+            heatFlux(beginX_BEAM, lengthBEAM, incrementXBeam, hfFaces.get(), modelHT_Tag.get())
+            htRecorder(beginX_BEAM, lengthBEAM, incrementXBeam)
+            entBeam += 1
+            beginX_BEAM += incrementXBeam
 
     if structureType.get() == "Truss":
         global entTruss
-        if incrementDirectionTRUSS.get() == "X":
+        if fixedDirectionTruss.get() == "X":
             beginY_Truss = float(yTruss.get())
             incrementY_Truss = float(incYTruss.get())
             widthTruss = float(Y_lenTruss.get())
-            while beginY_Truss < widthTruss:
-                beginX_Truss = float(xTruss.get())
-                lengthTruss = float(X_lenTruss.get())
-                incrementXTruss = float(incXTruss.get())
-                with open(osFile, 'a') as f3:
-                    f3.writelines("\n#This is Truss {0}\n\n".format(entTruss))
+            with open(osFile, 'a') as f3:
+                f3.writelines("\n#This is Truss {0}\n\n".format(entTruss))
+            if selectEntity.get() == "Isection":
+                iEntity(beginY_Truss, widthTruss, incrementY_Truss, float(cX_iSec.get()), float(cY_iSec.get()),
+                        float(flangeWidth.get()), float(beamHeight.get()), float(webThickness.get()),
+                        float(flangeThickness.get()))
+                mesh(beginY_Truss, widthTruss, incrementY_Truss, int(pChange.get()), float(meshFlangeWidth.get()),
+                        float(meshFlangeThickness.get()), float(meshWebThickness.get()), float(meshWebHeight.get()),
+                        int(modelMatTag.get()))
+
+            if selectEntity.get() == "Block":
+                blockEntity(beginY_Truss, widthTruss, incrementY_Truss, float(cX_Block.get()), float(cY_Block.get()),
+                            float(widthBlock.get()), float(depthBlock.get()))
+                meshBLK(beginY_Truss, widthTruss, incrementY_Truss, modelMatTag.get(), pChange.get(),
+                        float(meshWidBlock.get()), float(meshDepthBlock.get()))
+
+            if selectNodeSet.get() == "Faces":
+                nodeSETFaces(beginY_Truss, widthTruss, incrementY_Truss, Nodeset.get())
+            if selectNodeSet.get() == "User Defined":
                 if selectEntity.get() == "Isection":
-                    iEntity(beginX_Truss, lengthTruss, incrementXTruss, float(cX_iSec.get()), float(cY_iSec.get()),
-                            float(flangeWidth.get()), float(beamHeight.get()), float(webThickness.get()),
-                            float(flangeThickness.get()))
-                    mesh(beginX_Truss, lengthTruss, incrementXTruss, int(pChange.get()), float(meshFlangeWidth.get()),
-                         float(meshFlangeThickness.get()), float(meshWebThickness.get()), float(meshWebHeight.get()),
-                         int(modelMatTag.get()))
-
+                    nodeSETLoc(beginY_Truss, widthTruss, incrementY_Truss, float(beamHeight.get()))
                 if selectEntity.get() == "Block":
-                    blockEntity(beginX_Truss, lengthTruss, incrementXTruss, float(cX_Block.get()), float(cY_Block.get()),
-                                float(widthBlock.get()), float(depthBlock.get()))
-                    meshBLK(beginX_Truss, lengthTruss, incrementXTruss, modelMatTag.get(), pChange.get(),
-                            float(meshWidBlock.get()), float(meshDepthBlock.get()))
+                    nodeSETLoc(beginY_Truss, widthTruss, incrementY_Truss, float(depthBlock.get()))
 
-                if selectNodeSet.get() == "Faces":
-                    nodeSETFaces(beginX_Truss, lengthTruss, incrementXTruss, Nodeset.get())
-                if selectNodeSet.get() == "User Defined":
-                    if selectEntity.get() == "Isection":
-                        nodeSETLoc(beginX_Truss, lengthTruss, incrementXTruss, float(beamHeight.get()))
-                    if selectEntity.get() == "Block":
-                        nodeSETLoc(beginX_Truss, lengthTruss, incrementXTruss, float(depthBlock.get()))
+            fireModel(beginY_Truss, widthTruss, incrementY_Truss, fireModelType.get())
+            heatFlux(beginY_Truss, widthTruss, incrementY_Truss, hfFaces.get(), modelHT_Tag.get())
+            htRecorder(beginY_Truss, widthTruss, incrementY_Truss,)
+            entTruss += 1
+            beginY_Truss += incrementY_Truss
 
-                fireModel(beginX_Truss, lengthTruss, incrementXTruss, fireModelType.get())
-                heatFlux(beginX_Truss, lengthTruss, incrementXTruss, hfFaces.get(), modelHT_Tag.get())
-                htRecorder(beginX_Truss, lengthTruss, incrementXTruss)
-                entTruss += 1
-                beginY_Truss += incrementY_Truss
-
-        if incrementDirectionTRUSS.get() == "Y":
+        if fixedDirectionTruss.get() == "Y":
             beginX_Truss = float(xTruss.get())
             lengthTruss = float(X_lenTruss.get())
             incrementXTruss = float(incXTruss.get())
-            while beginX_Truss < lengthTruss:
-                beginY_Truss = float(yTruss.get())
-                incrementY_Truss = float(incYTruss.get())
-                widthTruss = float(Y_lenTruss.get())
-                with open(osFile, 'a') as f3:
-                    f3.writelines("\n#This is Truss {0}\n\n".format(entTruss))
+            with open(osFile, 'a') as f3:
+                f3.writelines("\n#This is Truss {0}\n\n".format(entTruss))
+            if selectEntity.get() == "Isection":
+                iEntity(beginX_Truss, lengthTruss, incrementXTruss, float(cX_iSec.get()), float(cY_iSec.get()),
+                        float(flangeWidth.get()), float(beamHeight.get()), float(webThickness.get()),
+                        float(flangeThickness.get()))
+                mesh(beginX_Truss, lengthTruss, incrementXTruss, int(pChange.get()), float(meshFlangeWidth.get()),
+                     float(meshFlangeThickness.get()), float(meshWebThickness.get()), float(meshWebHeight.get()),
+                     int(modelMatTag.get()))
+
+            if selectEntity.get() == "Block":
+                blockEntity(beginX_Truss, lengthTruss, incrementXTruss, float(cX_Block.get()), float(cY_Block.get()),
+                            float(widthBlock.get()), float(depthBlock.get()))
+                meshBLK(beginX_Truss, lengthTruss, incrementXTruss, modelMatTag.get(), pChange.get(),
+                        float(meshWidBlock.get()), float(meshDepthBlock.get()))
+
+            if selectNodeSet.get() == "Faces":
+                nodeSETFaces(beginX_Truss, lengthTruss, incrementXTruss, Nodeset.get())
+            if selectNodeSet.get() == "User Defined":
                 if selectEntity.get() == "Isection":
-                    iEntity(beginY_Truss, widthTruss, incrementY_Truss, float(cX_iSec.get()), float(cY_iSec.get()),
-                            float(flangeWidth.get()), float(beamHeight.get()), float(webThickness.get()),
-                            float(flangeThickness.get()))
-                    mesh(beginY_Truss, widthTruss, incrementY_Truss, int(pChange.get()), float(meshFlangeWidth.get()),
-                         float(meshFlangeThickness.get()), float(meshWebThickness.get()), float(meshWebHeight.get()),
-                         int(modelMatTag.get()))
-
+                    nodeSETLoc(beginX_Truss, lengthTruss, incrementXTruss, float(beamHeight.get()))
                 if selectEntity.get() == "Block":
-                    blockEntity(beginY_Truss, widthTruss, incrementY_Truss, float(cX_Block.get()), float(cY_Block.get()),
-                                float(widthBlock.get()), float(depthBlock.get()))
-                    meshBLK(beginY_Truss, widthTruss, incrementY_Truss, modelMatTag.get(), pChange.get(),
-                            float(meshWidBlock.get()), float(meshDepthBlock.get()))
+                    nodeSETLoc(beginX_Truss, lengthTruss, incrementXTruss, float(depthBlock.get()))
 
-                if selectNodeSet.get() == "Faces":
-                    nodeSETFaces(beginY_Truss, widthTruss, incrementY_Truss, Nodeset.get())
-                if selectNodeSet.get() == "User Defined":
-                    if selectEntity.get() == "Isection":
-                        nodeSETLoc(beginY_Truss, widthTruss, incrementY_Truss, float(beamHeight.get()))
-                    if selectEntity.get() == "Block":
-                        nodeSETLoc(beginY_Truss, widthTruss, incrementY_Truss, float(depthBlock.get()))
-
-                fireModel(beginY_Truss, widthTruss, incrementY_Truss, fireModelType.get())
-                heatFlux(beginY_Truss, widthTruss, incrementY_Truss, hfFaces.get(), modelHT_Tag.get())
-                htRecorder(beginY_Truss, widthTruss, incrementY_Truss,)
-                entTruss += 1
-                beginX_Truss += incrementXTruss
+            fireModel(beginX_Truss, lengthTruss, incrementXTruss, fireModelType.get())
+            heatFlux(beginX_Truss, lengthTruss, incrementXTruss, hfFaces.get(), modelHT_Tag.get())
+            htRecorder(beginX_Truss, lengthTruss, incrementXTruss)
+            entTruss += 1
+            beginX_Truss += incrementXTruss
 
     if structureType.get() == "Slabs":
         global entSlab
@@ -1795,71 +1783,59 @@ def outputData():
 
         if structureType.get() == "Beam":  # ----------For Truss when many truss within one region are taken
             global beginXBeam, beginYBeam
-            if incrementDirectionBEAM.get() == "X":
+            if fixedDirection.get() == "X":
                 beginYBeam = float(y_Beam.get())
                 while beginYBeam < float(y_LenBeam.get()):
-                    beginXBeam = float(x_Beam.get())
-                    while beginXBeam < float(x_LenBeam.get()):
-                        eleDictionaryBC(nodes4())
-                        ele_set_genBeamThermal(iEle, "Beam")
-                        ele_set_genBeamThermalSL(iEle, "Beam")
-                        ele_set_genBTBeam(iEle)
-                        ele_set_genBeam(iEle)
-                        ele_set_genBTBeamSL(iEle)
-                        beginXBeam += float(incX_Beam.get())
-                        jEle += 1
-                        iEle += 1
+                    eleDictionaryBC(nodesB1())
+                    ele_set_genBeamThermal(iEle, "Beam")
+                    ele_set_genBeamThermalSL(iEle, "Beam")
+                    ele_set_genBTBeam(iEle)
+                    ele_set_genBeam(iEle)
+                    ele_set_genBTBeamSL(iEle)
+                    jEle += 1
+                    iEle += 1
                     beginYBeam += float(incY_Beam.get())
 
-            if incrementDirectionBEAM.get() == "Y":
+            if fixedDirection.get() == "Y":
                 beginXBeam = float(x_Beam.get())
                 while beginXBeam < float(x_LenBeam.get()):
-                    beginYBeam = float(y_Beam.get())
-                    while beginYBeam < float(y_LenBeam.get()):
-                        eleDictionaryBC(nodes4())
-                        ele_set_genBeamThermal(iEle, "Beam")
-                        ele_set_genBeamThermalSL(iEle, "Beam")
-                        ele_set_genBTBeam(iEle)
-                        ele_set_genBeam(iEle)
-                        ele_set_genBTBeamSL(iEle)
-                        beginYBeam += float(incY_Beam.get())
-                        jEle += 1
-                        iEle += 1
+                    eleDictionaryBC(nodesB2())
+                    ele_set_genBeamThermal(iEle, "Beam")
+                    ele_set_genBeamThermalSL(iEle, "Beam")
+                    ele_set_genBTBeam(iEle)
+                    ele_set_genBeam(iEle)
+                    ele_set_genBTBeamSL(iEle)
+                    jEle += 1
+                    iEle += 1
                     beginXBeam += float(incX_Beam.get())
 
         if structureType.get() == "Truss":  # ----------For Truss when many truss within one region are taken
             global beginXTruss, beginYTruss
-            if incrementDirectionTRUSS.get() == "X":
+            if fixedDirectionTruss.get() == "X":
                 beginYTruss = float(yTruss.get())
                 while beginYTruss < float(Y_lenTruss.get()):
-                    beginXTruss = float(xTruss.get())
-                    while beginXTruss < float(X_lenTruss.get()):
-                        eleDictionaryBC(nodes8())
-                        ele_set_genBeamThermal(iEle, "Truss")
-                        ele_set_genBeamThermalSL(iEle, "Truss")
-                        ele_set_genBTTruss(iEle)
-                        ele_set_genTruss(iEle)
-                        ele_set_genBTTrussSL(iEle)
-                        beginXTruss += float(incXTruss.get())
-                        jEle += 1
-                        iEle += 1
-                    beginYTruss += float(incYTruss.get())
+                    eleDictionaryBC(nodesT1())
+                    ele_set_genBeamThermal(iEle, "Truss")
+                    ele_set_genBeamThermalSL(iEle, "Truss")
+                    ele_set_genBTTruss(iEle)
+                    ele_set_genTruss(iEle)
+                    ele_set_genBTTrussSL(iEle)
+                    jEle += 1
+                    iEle += 1
+                beginYTruss += float(incYTruss.get())
 
-            if incrementDirectionTRUSS.get() == "Y":
+            if fixedDirectionTruss.get() == "Y":
                 beginXTruss = float(xTruss.get())
                 while beginXTruss < float(X_lenTruss.get()):
-                    beginYTruss = float(yTruss.get())
-                    while beginYTruss < float(Y_lenTruss.get()):
-                        eleDictionaryBC(nodes8())
-                        ele_set_genBeamThermal(iEle, "Truss")
-                        ele_set_genBeamThermalSL(iEle, "Truss")
-                        ele_set_genBTTruss(iEle)
-                        ele_set_genTruss(iEle)
-                        ele_set_genBTTrussSL(iEle)
-                        beginYTruss += float(incYTruss.get())
-                        jEle += 1
-                        iEle += 1
-                    beginXTruss += float(incXTruss.get())
+                    eleDictionaryBC(nodes8())
+                    ele_set_genBeamThermal(iEle, "Truss")
+                    ele_set_genBeamThermalSL(iEle, "Truss")
+                    ele_set_genBTTruss(iEle)
+                    ele_set_genTruss(iEle)
+                    ele_set_genBTTrussSL(iEle)
+                    jEle += 1
+                    iEle += 1
+                beginXTruss += float(incXTruss.get())
 
         if structureType.get() == "Slabs":  # ----------For Slabs
             global beginXslab, beginYSlab
