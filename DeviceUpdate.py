@@ -117,6 +117,7 @@ ELEMENT_SET2 = 'Elementset2.txt'  # element file containing boundary file names
 ELEMENT_SET_COL = 'ElementFiles/Col_elementset.txt'  # makes element for columns
 ELEMENT_SET_BEAM = 'ElementFiles/Beam_elementset.txt'  # makes element for beam
 ELEMENT_SET_Truss = 'ElementFiles/Truss_elementset.txt'  # makes element for Truss
+ELEMENT_SET_Slab = 'ElementFiles/Slab_elementset.txt'  # makes element for Truss
 onlyColEle = 'ElementFiles/Column_elementLoad.txt'  # makes element loads for columns
 onlyBeamEle = 'ElementFiles/Beam_elementLoad.txt'   # makes element loads for beam
 onlySlabEle = 'ElementFiles/Slab_elementLoad.txt'   # makes element loads for slab
@@ -482,7 +483,7 @@ tk.Label(slabFrame, width=15, text="Increment in Y", anchor='e').grid(row=4, col
 
 widthY_slab = tk.Entry(slabFrame, width=5)
 widthY_slab.grid(row=4, column=3)
-widthY_slab.insert(tk.END, "5")
+widthY_slab.insert(tk.END, "31900")
 tk.Label(slabFrame, width=15, text="Total Width of Slab", anchor='e').grid(row=4, column=2)
 
 
@@ -1625,14 +1626,6 @@ def outputData():
             elementListShell = [key for key, value in shellEleDictionary.items()
                                 if set(value).issubset(fullSet)]
 
-        # def ele_set_genBeamThermal(counter, member):
-        #     with open(ELEMENT_SET2, 'a', newline='') as EleSet2:
-        #         EleSet2.write("\n\n#This is ElementSet{0} for {1}\n".format(counter, member))
-        #         for iItem in range(0, len(elementListBC), 1):  # step by threes.
-        #             f = str(elementListBC[iItem:iItem + 1])[1:-1]  # it removes the square brackets
-        #             EleSet2.write('\n eleLoad -ele {0} -type -beamThermal -source "temp{1}.dat" {2}'
-        #                           .format(f, counter, sectionBC.get()))
-
         def ele_set_genBeamThermal(counter, member):
             with open(ELEMENT_SET2, 'a', newline='') as EleSet2:
                 EleSet2.write("\n\n#This is ElementSet{0} for {1}\n".format(counter, member))
@@ -1643,10 +1636,9 @@ def outputData():
         def ele_set_genShellThermal(counter, member):
             with open(ELEMENT_SET2, 'a', newline='') as EleSet2:
                 EleSet2.write("\n\n#This is ElementSet{0} for {1}".format(counter, member))
-                for iItem in range(0, len(elementListShell), 1):  # step by threes.
-                    f = str(elementListShell[iItem:iItem + 1])[1:-1]  # it removes the square brackets
-                    EleSet2.write('\n eleLoad -ele {0} -type -shellThermal -source "temp{1}.dat" {2}'
-                                  .format(f, counter, sectionShell.get()))
+                f = str(elementListShell).replace(',', ' ')[1:-1]  # it removes the square brackets
+                EleSet2.write('\n eleLoad -ele {0} -type -shellThermal -source "temp{1}.dat" {2}'
+                              .format(f, counter, sectionShell.get()))
 
         def ele_set_genCol(counter):
             with open(ELEMENT_SET_COL, 'a', newline='') as EleSet:
@@ -1669,28 +1661,12 @@ def outputData():
                 for iItem in range(0, len(elementListBC), 1):  # step by threes.
                     writer.writerow(elementListBC[iItem:iItem+1])
 
-        # def ele_set_genBTCol(counter):
-        #     with open(onlyColEle, 'a', newline='') as EleSet2:
-        #         EleSet2.write("\n\n#This is ElementSet{0} for Columns\n".format(counter))
-        #         for iItem in range(0, len(elementListBC), 1):  # step by threes.
-        #             f = str(elementListBC[iItem:iItem + 1])[1:-1]  # it removes the square brackets
-        #             EleSet2.write('\n eleLoad -ele {0} -type -beamThermal -source "temp{1}.dat" {2}'
-        #                           .format(f, counter, sectionBC.get()))
-
         def ele_set_genBTCol(counter):
             with open(onlyColEle, 'a', newline='') as EleSet2:
                 EleSet2.write("\n\n#This is ElementSet{0} for Columns\n".format(counter))
                 f = str(elementListBC).replace(',', ' ')[1:-1]  # it removes the square brackets
                 EleSet2.write('\n eleLoad -ele {0} -type -beamThermal -source "temp{1}.dat" {2}'
                               .format(f, counter, sectionBC.get()))
-
-        # def ele_set_genBTTruss(counter):
-        #     with open(onlyTrussEle, 'a', newline='') as EleSet2:
-        #         EleSet2.write("\n\n#This is ElementSet{0} for Truss\n".format(counter))
-        #         for iItem in range(0, len(elementListBC), 1):  # step by threes.
-        #             f = str(elementListBC[iItem:iItem + 1])[1:-1]  # it removes the square brackets
-        #             EleSet2.write('\n eleLoad -ele {0} -type -beamThermal -source "temp{1}.dat" {2}'
-        #                           .format(f, counter, sectionBC.get()))
 
         def ele_set_genBTTruss(counter):
             with open(onlyTrussEle, 'a', newline='') as EleSet2:
@@ -1699,28 +1675,12 @@ def outputData():
                 EleSet2.write('\n eleLoad -ele {0} -type -beamThermal -source "temp{1}.dat" {2}'
                               .format(f, counter, sectionBC.get()))
 
-        # def ele_set_genBTBeam(counter):
-        #     with open(onlyBeamEle, 'a', newline='') as EleSet2:
-        #         EleSet2.write("\n\n#This is ElementSet{0} for Beam\n".format(counter))
-        #         for iItem in range(0, len(elementListBC), 1):  # step by threes.
-        #             f = str(elementListBC[iItem:iItem + 1])[1:-1]  # it removes the square brackets
-        #             EleSet2.write('\n eleLoad -ele {0} -type -beamThermal -source "temp{1}.dat" {2}'
-        #                           .format(f, counter, sectionBC.get()))
-
         def ele_set_genBTBeam(counter):
             with open(onlyBeamEle, 'a', newline='') as EleSet2:
                 EleSet2.write("\n\n#This is ElementSet{0} for Beam\n".format(counter))
                 f = str(elementListBC).replace(',', ' ')[1:-1]  # it removes the square brackets
                 EleSet2.write('\n eleLoad -ele {0} -type -beamThermal -source "temp{1}.dat" {2}'
                               .format(f, counter, sectionBC.get()))
-
-        # def ele_set_genSTSlab(counter):
-        #     with open(onlySlabEle, 'a', newline='') as EleSet2:
-        #         EleSet2.write("\n\n#This is ElementSet{0} for Slab".format(counter))
-        #         for iItem in range(0, len(elementListShell), 1):  # step by threes.
-        #             f = str(elementListShell[iItem:iItem + 1])[1:-1]  # it removes the square brackets
-        #             EleSet2.write('\n eleLoad -ele {0} -type -shellThermal -source "temp{1}.dat" {2}'
-        #                           .format(f, counter, sectionShell.get()))
 
         def ele_set_genSTSlab(counter):
             with open(onlySlabEle, 'a', newline='') as EleSet2:
@@ -1824,6 +1784,7 @@ def outputData():
                     while beginYSlab < float(widthY_slab.get()):
                         eleDictionaryShell(nodes7())
                         ele_set_genShellThermal(iEle, "Slabs")
+                        ele_set_genSTSlab(iEle)
                         beginYSlab += float(incY_slab.get())
                         jEle += 1
                         iEle += 1

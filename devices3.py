@@ -1781,6 +1781,7 @@ def outputData():
                     while beginYSlab < float(widthY_slab.get()):
                         eleDictionaryShell(nodes7())
                         ele_set_genShellThermal(iEle, "Slabs")
+                        ele_set_genSTSlab(iEle)
                         beginYSlab += float(incY_slab.get())
                         jEle += 1
                         iEle += 1
